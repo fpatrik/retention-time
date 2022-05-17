@@ -1,0 +1,10 @@
+pandas
+requests
+alive_progress
+statsmodels
+rdkit-pypi
+sklearn
+tensorflow
+torch
+matplotlib
+chemplot

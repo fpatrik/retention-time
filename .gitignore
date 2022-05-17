@@ -1,0 +1,4 @@
+**/__pycache__/
+env/
+trained_rnn_model/
+trained_gnn_model
