@@ -55,7 +55,7 @@
 \begin{document}
 \maketitle
 
-\abstract{Comparing measured and predicted retention time can improve molecular identification in tandem mass spectrometry. We assess a range of different machine learning methods to predict hydrophobicity, a molecular property that could be used as a proxy for retention time. The performance of the models is evaluated on the benchmark Martel and SAMPL7 datasets. We find that more powerful models perform better in-sample but do not necessarily outperform out-of-sample. We also find evidence that ensemble methods can outperform specific models. Multitask learning shows promise for improving the generalization of graph neural networks for hydrophobicity prediction. Finally, we discuss how generalization of graph neural networks could be improved further.}
+\abstract{Comparing measured and predicted retention time can improve molecular identification in tandem mass spectrometry. We assess a range of different machine learning methods to predict hydrophobicity, a molecular property that could be used as a proxy for retention time. The performance of the models is evaluated on the benchmark Martel and SAMPL7 datasets. We find that more powerful models perform better in-sample but do not necessarily out-of-sample. We also find evidence that ensemble methods can outperform specific models. Additionally, a multitask learning model shows promise for improving the generalization of graph neural networks for hydrophobicity prediction. Finally, we discuss how the generalization of graph neural networks for molecular property prediction could be improved further.}
 
 \section{Introduction}
 
@@ -71,13 +71,13 @@ The octanol-water partition coefficient (P or logP) measuring the hydrophobicity
 
 Prediction of logP with machine learning methods is a well established field and many different approaches have been developed. Substructure-based methods cut molecules into fragments and estimate their contribution towards logP. Property-based methods predict logP based on other global properties of molecules \cite{mannhold2009calculation}. Graph neural networks, which were developed more recently, do not require explicit feature selection but implicitly select features from the graph structure of the molecule alone.\\
 
-Various techniques have been successfully applied to logP prediction. With multitask learning, helper tasks are added to the model, such as related properties or predictions of other models, which can lead to increased performance and generalization \cite{lenselink2021multitask, capela2019multitask}. Transfer learning approaches leverage easily available data from a related domain to improve model results. For example, one could train a model on a large dataset of predictions from other models and then tilt the model towards a specific molecular space with a smaller dataset \cite{chen2021mrlogp}. Data augmentation can be used to improve logP prediction, for example by considering all tautomeric forms of a chemical \cite{ulrich2021exploring}. Improvements were also made by leveraging predictions of multiple methods and aggregating them into a new model \cite{plante2018jplogp}. Recent advances in Graph Neural Networks have been applied to logP prediction as well \cite{wieder2020compact}. \\
+Multiple techniques have been successfully applied to logP prediction. With multitask learning, helper tasks are added to the model, such as related properties or predictions of other models, which can lead to increased performance and generalization \cite{lenselink2021multitask, capela2019multitask}. Transfer learning approaches leverage easily available data from a related domain to improve model results. For example, one could train a model on a large dataset of predictions from other models and then tilt the model towards a specific molecular space with a smaller dataset \cite{chen2021mrlogp}. Data augmentation can be used to improve logP prediction, for example by considering all tautomeric forms of a chemical \cite{ulrich2021exploring}. Improvements were also made by leveraging predictions of multiple methods and aggregating them into a new model \cite{plante2018jplogp}. Recent advances in Graph Neural Networks have been applied to logP prediction as well \cite{wieder2020compact}. \\
 
 In this report, we will consider different machine learning approaches for logP prediction. After presenting the models, they will be trained and their performance evaluated on two independent datasets. Finally, we discuss the results and present some ideas for improvements.
 
 \section{Methods}
 
-We assume for now that estimates of hydrophobicity can be used to estimate RT and improve the performance of tandem mass spectrometry. We consider a range of different machine learning methods to predict logP, namely multiple linear regression (MLR), random forest (RF), recurrent neural net (RNN) and graph neural network (GNN). Each model is trained 5 times with the OPERA dataset. We assess the performance with two benchmarks, the Martel and the SAMPL7 datasets.
+We assume for now that estimates of hydrophobicity can be used to estimate RT and improve the performance of tandem mass spectrometry. We consider a range of different machine learning methods to predict logP, namely multiple linear regression (MLR), random forest (RF), recurrent neural net (RNN) and graph neural network (GNN). Each model is trained five times with the OPERA dataset. We assess the performance with two benchmarks, the Martel and the SAMPL7 datasets.
 
 \subsection{Datasets}
 \subsubsection{OPERA}
@@ -146,7 +146,7 @@ We trained a RF model that creates an ensemble of decision trees. We use the sta
 
 While predicting molecular properties with RNNs appears to be less common, they have been used for molecule generation in contexts such as drug discovery \cite{bjerrum2017molecular}. In this model, we pass atom representation iteratively through the RNN. As there is no natural ordering of atoms in a molecule, we use the default order of RDKit. Finally, there is a fully connected layer predicting logP from the learned representation of the molecule.\\
 
-The RNN does not require feature selection, however we have to find a suitable representation for each atom within the molecule. We represent each atom as the atom type itself and its neighboring atoms and bond types. We find that there are around 500 different combinations of atoms with their neighboring atoms in our datasets, provided we do not consider hydrogen atoms. We then use an embedding layer to reduce the dimensionality of the representation.\\
+The RNN does not require explicit feature selection, however we have to find a suitable representation for each atom within the molecule. We represent each atom as the atom type itself and its neighboring atoms and bond types. We find that there are around 500 different combinations of atoms with their neighboring atoms in our datasets, provided we do not consider hydrogen atoms. We then use an embedding layer to reduce the dimensionality of the representation.\\
 
 \subsubsection{Graph neural networks}
 
@@ -320,7 +320,7 @@ We can consider the correlation of errors of the different models in order to ev
 \label{table4}
 \end{center}
 
-We can see that model errors on the Martel dataset are indeed correlated. The correlation is particularly high amongst the GNN models, which might be expected. Interestingly, the errors of the multitask model not only correlate with the other GNNs but also with the MLR and the RF. This might suggest that the multitask model indeed relies on the features learned by the helper tasks to some extent. However, there is no perfect correlation between models and we might expect an ensemble approach to perform even better. If we take the mean of all model predictions, the RMSE on Martel turns out to be 1.14, better than any individual model. \\
+We can see that model errors on the Martel dataset are correlated. The correlation is particularly high amongst the GNN models, which might be expected. Interestingly, the errors of the multitask model not only correlate with the other GNNs but also with the MLR and the RF. This might suggest that the multitask model indeed relies on the features learned by the helper tasks to some extent. However, there is no perfect correlation between models and we might expect an ensemble approach to perform even better. If we take the mean of all model predictions, the RMSE on Martel turns out to be 1.14, better than any individual model. \\
 
 \subsubsection{Performance on SAMPL7}
 
@@ -438,7 +438,7 @@ We set out to evaluate different machine learning algorithms for logP prediction
 
 We conclude that a thorough understanding of the molecular space of both the training as well as the target molecules is essential for logP prediction. Models can show great in-sample performance but lack generalization, and vice versa. More powerful approaches tend to show better in-sample performance. Simpler models, such as MLR, might be more suitable for predicting logP out-of-sample. \\
 
-Modern techniques such as GNNs have been used for logP prediction, often in combination with multitask learning or transfer learning and with a specific set of target molecules. Many of the models geared towards logP prediction in broad molecular spaces, such as XlogP3-AA, have been developed many years ago. We have seen that multitask models might be valuable for creating generalizing GNNs for molecular property prediction. Most likely, further improvements could be made with the techniques outlined in the discussion.
+Modern techniques such as GNNs have been used for logP prediction, often in combination with multitask learning or transfer learning and with a specific set of target molecules. Many of the models geared towards logP prediction in broad molecular spaces, such as XlogP3-AA, have been developed many years ago. We have seen that multitask models might be valuable for creating generalizing GNNs for molecular property prediction. Quite possibly, further improvements could be made with the techniques outlined in the discussion.
 
 % Bibliography
 %-----------------------------------------------------------------
