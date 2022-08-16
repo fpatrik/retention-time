@@ -8,3 +8,8 @@ tensorflow
 torch
 matplotlib
 chemplot
+torch-scatter
+torch-sparse
+torch-cluster
+torch-spline-conv
+pyg-nightly

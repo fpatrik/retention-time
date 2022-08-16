@@ -1,0 +1,448 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Template for a LaTex article in English.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+\usepackage{graphicx,subcaption,ragged2e, array}
+\usepackage{footnote}
+\usepackage[font=small,labelfont=bf]{caption}
+\makesavenoteenv{tabular}
+
+
+% AMS packages:
+\usepackage{amsmath, amsthm, amsfonts}
+
+% Theorems
+%-----------------------------------------------------------------
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\theoremstyle{remark}
+\newtheorem{rem}[thm]{Remark}
+
+% Shortcuts.
+% One can define new commands to shorten frequently used
+% constructions. As an example, this defines the R and Z used
+% for the real and integer numbers.
+%-----------------------------------------------------------------
+\def\RR{\mathbb{R}}
+\def\ZZ{\mathbb{Z}}
+
+% Similarly, one can define commands that take arguments. In this
+% example we define a command for the absolute value.
+% -----------------------------------------------------------------
+\newcommand{\abs}[1]{\left\vert#1\right\vert}
+
+% Operators
+% New operators must defined as such to have them typeset
+% correctly. As an example we define the Jacobian:
+% -----------------------------------------------------------------
+\DeclareMathOperator{\Jac}{Jac}
+
+%-----------------------------------------------------------------
+\title{Retention time prediction to facilitate molecular structural identification with tandem mass spectrometry}
+\author{Patrik Friedlos\\
+  \small DAS ETH Data Science Capstone Project at SDSC\\
+  \small Supervised by Eliza Harris and Lillian Gasser
+}
+
+\begin{document}
+\maketitle
+
+\abstract{Comparing measured and predicted retention time can improve molecular identification in tandem mass spectrometry. We assess a range of different machine learning methods to predict hydrophobicity, a molecular property that could be used as a proxy for retention time. The performance of the models is evaluated on the benchmark Martel and SAMPL7 datasets. We find that more powerful models perform better in-sample but do not necessarily outperform out-of-sample. We also find evidence that ensemble methods can outperform specific models. Multitask learning shows promise for improving the generalization of graph neural networks for hydrophobicity prediction. Finally, we discuss how generalization of graph neural networks could be improved further.}
+
+\section{Introduction}
+
+Identification of molecules in complex mixtures with liquid chromatography followed by tandem mass spectrometry has many applications, such as use in clinical laboratories or analysis of pharmaceutical residues \cite{van2012role, petrovic2005liquid}. It has been described how retention time (RT) during liquid chromatography can be used to improve the result of tandem mass spectrometry \cite{strittmatter2004application}. For example, one could consider molecules identified by mass spectrometry false positives if their measured retention time varies greatly from the predicted retention time \cite{yang2021prediction}.\\
+
+When it comes to estimating RT, one can distinguish between look-up, index-based, machine learning and modeling-based methods \cite{moruz2017peptide}. Look-up-based methods involve keeping a database of measured RT. Index-based methods estimate the RT of peptides based on the contained amino acids. Modeling-based approaches estimate RT from a physical model of chromatographic separation. Finally, machine learning methods predict RT directly from the chemical structure of the substance.\\
+
+A wide range of machine learning algorithms can be considered for RT prediction. Bouwmeester et al. \cite{bouwmeester2019comprehensive} compared the performance of linear models such as Bayesian ridge regression, LASSO regression and linear support vector regression as well as non-linear models such as artificial neural networks, adaptive boosting, gradient boosting, random forests and non-linear support vector regression. They conclude that gradient boosting performs the best. However they suggest considering different algorithms as well as blended approaches. More recently, graph neural networks (GNNs) have been found outperforming Bayesian ridge regression, convolutional neural networks and random forests at predicting RT \cite{yang2021prediction}.\\
+
+While mass spectra are agnostic to the setup and conditions of the experiment, RT can vary depending on the environment. Various machine learning methods have been developed to account for changing experimental conditions. Some methods perform well even with a small setup-specific training set \cite{bouwmeester2019comprehensive}. Other methods use transfer learning to make them applicable in varying setups \cite{yang2021prediction}. Furthermore, one can predict a retention index relative to reference substances or retention order which is more stable across setups than RT \cite{qu2021predicting}.\\
+
+The octanol-water partition coefficient (P or logP) measuring the hydrophobicity of a substance is strongly related to RT \cite{bouwmeester2019comprehensive}. One could hence consider using hydrophobicity as a proxy for predicting RT. Furthermore, hydrophobicity plays an important role in fields such as drug design \cite{tetko2004application}. \\
+
+Prediction of logP with machine learning methods is a well established field and many different approaches have been developed. Substructure-based methods cut molecules into fragments and estimate their contribution towards logP. Property-based methods predict logP based on other global properties of molecules \cite{mannhold2009calculation}. Graph neural networks, which were developed more recently, do not require explicit feature selection but implicitly select features from the graph structure of the molecule alone.\\
+
+Various techniques have been successfully applied to logP prediction. With multitask learning, helper tasks are added to the model, such as related properties or predictions of other models, which can lead to increased performance and generalization \cite{lenselink2021multitask, capela2019multitask}. Transfer learning approaches leverage easily available data from a related domain to improve model results. For example, one could train a model on a large dataset of predictions from other models and then tilt the model towards a specific molecular space with a smaller dataset \cite{chen2021mrlogp}. Data augmentation can be used to improve logP prediction, for example by considering all tautomeric forms of a chemical \cite{ulrich2021exploring}. Improvements were also made by leveraging predictions of multiple methods and aggregating them into a new model \cite{plante2018jplogp}. Recent advances in Graph Neural Networks have been applied to logP prediction as well \cite{wieder2020compact}. \\
+
+In this report, we will consider different machine learning approaches for logP prediction. After presenting the models, they will be trained and their performance evaluated on two independent datasets. Finally, we discuss the results and present some ideas for improvements.
+
+\section{Methods}
+
+We assume for now that estimates of hydrophobicity can be used to estimate RT and improve the performance of tandem mass spectrometry. We consider a range of different machine learning methods to predict logP, namely multiple linear regression (MLR), random forest (RF), recurrent neural net (RNN) and graph neural network (GNN). Each model is trained 5 times with the OPERA dataset. We assess the performance with two benchmarks, the Martel and the SAMPL7 datasets.
+
+\subsection{Datasets}
+\subsubsection{OPERA}
+
+The OPERA dataset contains 13'828 small molecules with measured logP values. The dataset was compiled for the training of the OPERA models. It is based on the PHYSPROP logP dataset, which was further curated by the authors. In particular, errors and mismatches in chemical structure formats and identifiers as well as structure validation issues were corrected. The authors then removed low-quality datapoints, outliers and duplicates. The details of this procedure can be found in their paper \cite{mansouri2018opera}. \\
+
+The OPERA dataset contains molecules of masses between 26 and 1'203 Daltons. The logP values range from -5.08 to 11.29. The distribution of the two metrics is shown in Figure \ref{figure1}. The high quality of the dataset as well as the large range of molecules it covers, at least regarding mass and logP, make it ideal as a training set.\\
+
+\begin{figure}
+\captionsetup[subfigure]{justification=Centering}
+
+\begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\textwidth]{./../plots/logp_distribution_Opera.png}
+\end{subfigure}\hspace{\fill} % maximize horizontal separation
+\begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{./../plots/molecular_mass_distribution_Opera.png}
+\end{subfigure}
+
+\bigskip % more vertical separation
+\begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{./../plots/logp_distribution_Martel.png}
+\end{subfigure}\hspace{\fill} % maximize horizontal separation
+\begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{./../plots/molecular_mass_distribution_Martel.png}
+\end{subfigure}
+
+\bigskip % more vertical separation
+\begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{./../plots/logp_distribution_SAMPL7.png}
+\end{subfigure}\hspace{\fill} % maximize horizontal separation
+\begin{subfigure}[t]{0.45\textwidth}
+    \includegraphics[width=\linewidth]{./../plots/molecular_mass_distribution_SAMPL7.png}
+\end{subfigure}
+
+\caption{The plots show the distribution of logP as well as the distribution of molecular mass for the OPERA, Martel and SAMPL7 datasets.}
+\label{figure1}
+\end{figure}
+
+
+For training, we removed molecules with a logP above 8. We further removed molecules that are also contained in the Martel and SAMPL7 datasets in order to make them viable as test sets. A total of 263 molecules were removed, leaving 13'565 in the dataset for training.
+
+\subsubsection{Martel}
+
+The Martel dataset contains logP measurements of chemically diverse molecules for benchmarking studies \cite{martel2013large}. The authors constructed a set of diverse molecules, purchased the compounds and experimentally measured the logP values. \\
+
+The Martel dataset contains 707 molecules of masses between 160 and 599 Daltons. The logP values range from 0.3 to 6.69. The distribution of the two metrics is shown in Figure \ref{figure1}. The Martel dataset is an ideal test set as it is chemically diverse and commonly used as a benchmark.
+
+\subsubsection{SAMPL7}
+
+SAMPL7 was a blind challenge in physical property prediction \cite{bergazin2021evaluation}. One part of the challenge consists of predicting logP for 22 molecules measured by the authors. \\
+
+The SAMPL7 dataset contains molecules of masses between 227 and 365 Daltons. The logP values range from 0.76 to 2.96. The distribution of the two metrics is shown in Figure \ref{figure1}. The SAMPL7 is a valuable test set as we can assess the performance of our general-purpose models in a specialized challenge. For example, some models participating in the challenge were specifically tuned for the molecular space of the challenge \cite{lenselink2021multitask}.
+
+\subsection{Models}
+\subsubsection{Multiple linear regression}
+
+Despite its simplicity, MLR can show good performance in predicting logP. For example, a linear model was among the best performing in the SAMPL7 blind challenge \cite{lopez2021multiple}. Similarly, Mannhold et al. proposed a simple linear model based on just the count of carbon atoms and the count of heteroatoms in the molecule. It outperformed many more complex models in their comparison \cite{mannhold2009calculation}.\\
+
+For the linear model, we have to perform a feature selection. Firstly, we use the count of each atom type contained in the molecule. Secondly, we use all fragment counts available in the RDKit Python package (rdkit.Chem.Fragments). The regression is then performed using the statsmodels package.
+
+\subsubsection{Random forest}
+
+We trained a RF model that creates an ensemble of decision trees. We use the standard implementation of sklearn (RandomForestRegressor from sklearn.ensemble) with default settings. We select the same features as for the MLR model.
+
+\subsubsection{Recurrent neural net}
+
+While predicting molecular properties with RNNs appears to be less common, they have been used for molecule generation in contexts such as drug discovery \cite{bjerrum2017molecular}. In this model, we pass atom representation iteratively through the RNN. As there is no natural ordering of atoms in a molecule, we use the default order of RDKit. Finally, there is a fully connected layer predicting logP from the learned representation of the molecule.\\
+
+The RNN does not require feature selection, however we have to find a suitable representation for each atom within the molecule. We represent each atom as the atom type itself and its neighboring atoms and bond types. We find that there are around 500 different combinations of atoms with their neighboring atoms in our datasets, provided we do not consider hydrogen atoms. We then use an embedding layer to reduce the dimensionality of the representation.\\
+
+\subsubsection{Graph neural networks}
+
+The use of GNNs for logP prediction has been examined by many authors \cite{wieder2020compact}. We use the same node representation as in the RNN model. After feeding the node representation through 2 linear layers with relu activation, 6 graph convolutional layers as suggested by Kipf and Welling are applied to the graph \cite{welling2016semi}. The sum is used as the global pooling function. Finally, two more linear layers are used to predict logP. The implementation is done with PyTorch Geometric. \\
+
+In a second model, we want to evaluate the benefit of recent advances in neighborhood aggregation for molecular property prediction. In particular, we use Principal Neighbourhood Aggregation (PNA) as suggested by Corso et al. \cite{corso2020principal}. It uses sum, max and var as well as degree-scaled versions thereof in the neighborhood aggregation. We use the Pytorch Geometric implementation of the PNA layer.\\
+
+In a third model, we want to evaluate the findings of Ryu et al. who report benefits of using gated skip-connection and attention for molecular property prediction \cite{ryu2018deeply}. To this end, we use a general GNN layer of Pytorch Geometric based on the work of You et al. which features both attention and skip-connections \cite{you2020design}. \\
+
+Finally, we consider a simple GNN with multitask learning. Multitask learning has been successfully applied to molecular property prediction and logP prediction in particular. Furthermore, it can improve model generalization, which is of major importance should the model be applied to novel molecules. Apart from logP, the model predicts 15 molecular features deemed most relevant by the RF model. This includes counts of atoms but also functional groups, such as the count of benzene rings. \\
+
+\subsection{Training}
+
+In order to objectively asses model performances on the Martel and SAMPL7 test sets, we removed these molecules from the OPERA training set. A random 80/20 split of the remaining OPERA dataset is used for training and assessing in-sample performance. Hyperparameters were optimized, if at all, by creating an additional validation set within the training set. \\
+
+Every model is trained five times with different random initialization, such that variations in training outcomes can be estimated.
+
+\subsection{Results}
+
+\subsubsection{Performance on OPERA}
+
+First, we consider the in-sample performance of the models on the OPERA dataset. The root-mean-square error (RMSE) of each model type as well as the standard deviation of the 5 trained models is shown in Table \ref{table1}. As expected, the more complex models show better performance on both the training and test set. Most models show signs of overfitting. The MLR does not overfit, which can probably be attributed to model simplicity. Interestingly, the multitask model does not overfit at all. This could be explained by competition for model bandwidth among the different tasks.
+
+\begin{center}
+\begin{tabular}{ | m{3cm} | m{2.5cm}| m{2.5cm} | } 
+  \hline
+  \textbf{Model} & \textbf{RMSE Train} & \textbf{RMSE Test} \\ 
+  \hline
+  MLR & 0.86 $\pm$ 0.00 & 0.88 $\pm$ 0.00 \\ 
+  \hline
+  RF & 0.25 $\pm$ 0.00 & 0.61 $\pm$ 0.00 \\ 
+  \hline
+  RNN & 0.27 $\pm$ 0.00 & 0.45 $\pm$ 0.00 \\ 
+  \hline
+  GNN & 0.27 $\pm$ 0.01 & 0.45 $\pm$ 0.01 \\ 
+  \hline
+  GNN + PNA & 0.20 $\pm$ 0.01 & 0.51 $\pm$ 0.01 \\ 
+  \hline
+  GNN + Attention & 0.23 $\pm$ 0.01 & 0.45 $\pm$ 0.01 \\ 
+  \hline
+  GNN + Multitask & 0.47 $\pm$ 0.01 & 0.46 $\pm$ 0.00 \\ 
+  \hline
+\end{tabular}
+\captionsetup{width=0.8\textwidth}
+\captionof{table}{Comparison of in-sample performance of the models as measured by RMSE for both the training and test sets.}
+\label{table1}
+\end{center}
+
+\subsubsection{Performance on Martel}
+
+Next, we compare the performance of the models with other methods on the Martel benchmark dataset. Table \ref{table2} shows the RMSE of our and various other models on the Martel dataset.
+
+\begin{center}
+\begin{tabular}{ | m{5cm} | m{2.5cm}| } 
+  \hline
+  \textbf{Model} & \textbf{RMSE} \\ 
+  \hline
+  COSMO-RS \footnote{COSMO-RS predicts logP with a physical model \cite{ulrich2021exploring}} & 0.93 \\
+  \hline
+  Lui at el. \footnote{This model uses stochastic gradient descent-optimized multilinear regression with 1438 physicochemical descriptors \cite{lui2020comparison}} & 1.03 \\
+  \hline
+  JPlogP-Coeff & 1.04 \\ 
+  \hline
+  JPlogP—library & 	1.05 \\
+  \hline
+  LogP4Average & 1.12 \\ 
+  \hline
+  XlogP3-AA & 1.16 \\
+  \hline
+  AAM & 1.18 \\ 
+  \hline
+  \textbf{MLR} & 1.20 $\pm$ 0.00 \\ 
+  \hline
+  \textbf{GNN + Multitask} & 1.20 $\pm$ 0.04 \\ 
+  \hline
+  \textbf{RNN} & 1.21 $\pm$ 0.02 \\
+  \hline
+  Molinspiration & 	1.21 \\ 
+  \hline
+  SlogP & 1.24 \\ 
+  \hline
+  ALogP (Vega) & 1.24 \\
+  \hline
+  Biobyte CLogP & 	1.24 \\ 
+  \hline
+  \textbf{GNN + Attention} & 1.27 $\pm$ 0.05 \\
+  \hline
+  XLogP2 & 	1.28 \\ 
+  \hline
+  AlogPS logP & 1.29 \\ 
+  \hline
+  \textbf{GNN} & 1.30 $\pm$ 0.04 \\
+  \hline
+  \textbf{GNN + PNA} & 1.39 $\pm$ 0.05 \\
+  \hline
+  ACD & 1.39 \\
+  \hline
+  KowWIN & 1.42 \\
+  \hline
+  \textbf{RF} & 1.44 $\pm$ 0.01 \\
+  \hline
+  Meylan (Vega) & 1.66 \\
+  \hline
+  Mannhold LogP & 1.71 \\
+  \hline
+  MLogP (Vega) & 1.95 \\
+  \hline
+  AlogP (CDK) & 3.72 \\
+  \hline
+\end{tabular}
+\captionsetup{width=0.8\textwidth}
+\captionof{table}{The table shows the RMSE of different models for predictions on the Martel dataset. Our models are highlighted in bold. Unless stated otherwise, results are taken from Plante et al. \cite{plante2018jplogp}.}
+\label{table2}
+\end{center}
+
+The binned absolute errors of the models can be considered to get a better understanding of the distribution of errors. Table \ref{table3} shows the binned absolute errors for our models on the Martel dataset. The values of XlogP3-AA are added for reference and are taken from Plante et al. \cite{plante2018jplogp}. \\
+
+\begin{center}
+\begin{tabular}{ | m{2.0cm} | m{1.0cm}| m{1.0cm}| m{1.0cm}| m{1.0cm}| m{1.0cm}| } 
+  \hline
+   & 0-0.5 & 0.5-1 & 1-1.5 & 1.5-2 & $>$ 2  \\ 
+   \hline
+   XlogP3-AA & 33.0\% & 27.9\% & 20.7\% & 10.5\% & 8.1\%  \\
+  \hline
+   MLR & 30.8\% & 29.8\% & 18.7\% & 11.9\% & 8.8\%  \\ 
+  \hline
+  RF & 25.1\% & 24.4\% & 19.7\% & 14.9\% & 15.8\%  \\ 
+  \hline
+  RNN & 32.8\% & 28.1\% & 18.3\% & 12.0\% & 8.8\%  \\ 
+  \hline
+  GNN & 27.9\% & 26.4\% & 21.4\% & 12.7\% & 11.6\%  \\ 
+  \hline
+  GNN + PNA & 26.5\% & 25.2\% & 19.6\% & 14.1\% & 14.5\%  \\ 
+  \hline
+  GNN + A & 29.3\% & 26.8\% & 20.5\% & 12.6\% & 10.8\% \\ 
+  \hline
+  GNN + M & 32.8\% & 29.2\% & 18.2\% & 10.1\% & 9.6\% \\ 
+  \hline
+
+\end{tabular}
+\captionsetup{width=0.8\textwidth}
+\captionof{table}{The table shows the distribution of absolute errors of the different models for predictions on the Martel dataset.}
+\label{table3}
+\end{center}
+
+We can consider the correlation of errors of the different models in order to evaluate to what extent they have learned different information. In case correlations between models are low, an ensemble model might be able to outperform the individual models. Table \ref{table4} shows the error correlations of the different models on the Martel dataset.\\
+
+\begin{center}
+\begin{tabular}{ | m{0.8cm} | m{0.8cm}| m{0.8cm}| m{0.8cm}| m{0.8cm}| m{0.8cm}| m{0.8cm}| m{0.8cm}| } 
+  \hline
+   & MLR & RF & RNN & GNN & GNN + PNA & GNN + A & GNN + M \\ 
+  \hline
+   MLR & 1.00 & 0.68 & 0.62 & 0.60 & 0.56 & 0.60 & 0.71 \\ 
+  \hline
+  RF & 0.68 & 1.00 & 0.55 & 0.53 & 0.49 & 0.51 & 0.56 \\ 
+  \hline
+  RNN & 0.62 & 0.55 & 1.00 & 0.81 & 0.72 & 0.78 & 0.80 \\ 
+  \hline
+  GNN & 0.60 & 0.53 & 0.81 & 1.00 & 0.84 & 0.90 & 0.87\\ 
+  \hline
+  GNN + PNA & 0.56 & 0.49 & 0.72 & 0.84 & 1.00 & 0.85 & 0.80\\ 
+  \hline
+  GNN + A & 0.60 & 0.51 & 0.78 & 0.90 & 0.85 & 1.00 & 0.84\\ 
+  \hline
+  GNN + M & 0.71 & 0.56 & 0.80 & 0.87 & 0.80 & 0.84 & 1.00\\ 
+  \hline
+
+\end{tabular}
+\captionsetup{width=0.8\textwidth}
+\captionof{table}{The table shows the correlation of errors of the different models for predictions on the Martel dataset. The mean error of five models of each type is considered for the comparison.}
+\label{table4}
+\end{center}
+
+We can see that model errors on the Martel dataset are indeed correlated. The correlation is particularly high amongst the GNN models, which might be expected. Interestingly, the errors of the multitask model not only correlate with the other GNNs but also with the MLR and the RF. This might suggest that the multitask model indeed relies on the features learned by the helper tasks to some extent. However, there is no perfect correlation between models and we might expect an ensemble approach to perform even better. If we take the mean of all model predictions, the RMSE on Martel turns out to be 1.14, better than any individual model. \\
+
+\subsubsection{Performance on SAMPL7}
+
+Finally, we evaluate the performance of the models on the highly specific SAMPL7 dataset. We take all ranked submissions from the SAMPL7 challenge as the benchmark \cite{teresa_danielle_bergazin_2021_5637494}. Table \ref{table5} shows the performance of the different approaches on the SAMPL7 dataset as measured by RMSE.
+
+\begin{center}
+\begin{tabular}{ | m{5cm} | m{2.5cm}| } 
+  \hline
+  \textbf{Model} & \textbf{RMSE} \\ 
+  \hline
+  Chemprop & 0.49 \\ 
+  \hline
+  GROVER & 0.62 \\ 
+  \hline
+  ffsampled\_deeplearning\_cl1 & 0.63 \\ 
+  \hline
+  TFE\_Attentive\_FP & 0.64 \\ 
+  \hline
+  COSMO-RS & 0.66 \\
+  \hline
+  \textbf{GNN} & 0.71 $\pm$ 0.10 \\ 
+  \hline
+  TFE MLR & 0.71 \\ 
+  \hline
+  ClassicalGSG DB3 & 0.74 \\ 
+  \hline
+  \textbf{GNN + Multitask} & 0.80 $\pm$ 0.08 \\
+  \hline
+  \textbf{GNN + Attention} & 0.80 $\pm$ 0.08 \\
+  \hline
+  \textbf{RF} & 0.87 $\pm$ 0.05 \\
+  \hline
+  \textbf{GNN + PNA} & 0.99 $\pm$ 0.10 \\
+  \hline
+  \textbf{MLR} & 1.03 $\pm$ 0.00 \\ 
+  \hline
+  TFE IEFPCM MST & 1.04 \\ 
+  \hline
+  \textbf{RNN} & 1.07 $\pm$ 0.10 \\
+  \hline
+  NES-1 (GAFF2/OPC3) B & 1.21 \\ 
+  \hline
+  MD (CGenFF/TIP3P)	 & 1.47 \\ 
+  \hline
+  EC\_RISM\_wet & 1.65 \\ 
+  \hline
+  TFE-NHLBI-TZVP-QM & 1.70 \\ 
+  \hline
+  MD-EE-MCC (GAFF-TIP4P-Ew)	 & 1.92 \\ 
+  \hline
+  TFE b3lypd3 & 2.32 \\ 
+  \hline
+  TFE-SMD-solvent-opt & 2.54 \\ 
+  \hline
+  Ensemble Martel & 3.40 \\ 
+  \hline
+  QSPR\_Mordred2D\_TPOT\_AutoML & 3.76 \\ 
+  \hline
+\end{tabular}
+\captionsetup{width=0.8\textwidth}
+\captionof{table}{The table shows the performance as measured by RMSE for all ranked submissions to the SAMPL7 challenge compared to our models.}
+\label{table5}
+\end{center}
+
+\subsection{Discussion}
+
+\subsubsection{Model performance}
+
+The results generally show that in-sample performance increases with more powerful methods. As expected, these methods were also more prone to overfitting. The performance of the RNN is remarkable as it performs similarly to the GNNs without any explicit notion of the graph structure of the molecules. For GNNs we found little benefit in using PNA or attention layers as opposed to a GCN. \\
+
+When it comes to out-of-sample performance, we find that more powerful models offer little benefit a priori. In fact, the MLR performs the best on the Martel dataset despite being the simplest model. Furthermore, there seems to be little correlation between the generalization of the models to Martel and SAMPL7. Maybe this could be attributed to the different chemical spaces of the two datasets. We also have to consider that SAMPL7 is a small dataset of specific molecules and is not representative for broad model generalization. \\
+
+The multitask model might offer a good compromise between in-sample and out-of-sample performance. The loss of performance due to the helper tasks on the in-sample test set is negligible. However, generalization seems to be better, at least to the Martel dataset. \\
+
+One could argue that the models perform reasonably well on the SAMPL7 dataset, considering that it contains specific types of molecules. In particular, some models competing in the challenge were specifically tuned for the molecular space. \\
+
+The variance of model performance is relatively high in particular for the GNNs. This suggests that a significant part of the performance has to be attributed to the initialization. An ensemble of models could be used to improve this issue. \\
+
+\subsubsection{Ideas for model improvement}
+
+The implmentation of the models was kept relatively straightforward. In particular, we did not perform systematic hyperparameter optimization. For the models with explicit feature selection, the MLR and the RF, only atom counts and default fragment counts of RDKit were used. More careful tuning of the models would probably increase performance in some cases. \\
+
+An interesting paradigm for logP prediction is making it relative to reference molecules with known logP. Such an approach is used by XLOGP3, amongst others \cite{cheng2007computation}. Although this comes with additional challenges, such as having to determine the appropriate reference molecules, it might also improve model performance. \\
+
+Further improvements could be made by using more datasets. An aggregation of multiple datasets could cover a broader range of molecules and yield increased performance. Different sampling and splitting techniques, such as scaffold splitting, could also be considered. \\
+
+For GNNs specifically, a wide range of different architectures can be considered. This involves choosing from a wide range of convolutional layers, neighborhood aggregations and global pooling layers. Furthermore, there are many options for the initial representation of the atoms. We constructed a representation that includes both the neighboring bonds and atoms. However, there are also setups which handle edge features separately. One could even consider a related graph where every bond in the molecule is a node and the atoms being connected are encoded as node features. \\
+
+\subsubsection{Improving generalization}
+
+It seems apparent that a good understanding of the chemical space of both the training set and the target molecules is crucial. If they are similar, the use of powerful methods such as GNNs may well be justified. If they are different, simpler models may generalize a lot better. One could imagine that the latter is more often the case in most practical settings. \\
+
+One solution to achieving good performance on a set of target molecules is the careful construction of a training set. For example, Lenselink et al. created a tailored training set for their participation in the SAMPL7 challenge \cite{lenselink2021multitask}. \\
+
+Many well-established general logP prediction methods, such as XLOGP3, are essentially linear models \cite{cheng2007computation}. One has to wonder if GNNs could outperform such methods in broad molecular spaces. The following ideas could be considered to construct a model with broad generalization capabilities:
+
+\begin{itemize}
+\item Multitask learning is an approach to inductive transfer that improves generalization by using the domain information contained in the training signals of related tasks as an inductive bias \cite{caruana1997multitask}. It has already been successfully applied to logP prediction \cite{lenselink2021multitask}. We have also seen the benefit of this approach. As additional tasks, functional groups deemed relevant for logP prediction by other models were used. One could also consider using a RT dataset such as SMRT of METLIN as RT is related to logP \cite{domingo2019metlin}. Finally, quantum mechanical properties related to logP could be considered as well. To this end, a dataset such as QMugs could be used \cite{isert2022qmugs}.
+\item Transfer learning approaches could be used to enhance performance. In transfer learning, more easily available data from a different but related domain is used for training \cite{weiss2016survey}. For example, a GNN could learn to count functional groups of molecules relevant for logP prediction on a large diverse dataset. The model could then be further trained to predict logP. One would either train a small new part of the model or retrain with elastic weight consolidation in order to nudge the model to use the more generalizing features learned on the large dataset if possible.
+\item Combining multitask and transfer learning, a multitask model predicting counts of functional groups and logP could be trained. Next, the model would be used to add predicted logP to a large and diverse dataset for pseudo-rehersal. Finally, the multitask model could be retrained on the large dataset, hoping the helper tasks, on which logP prediction now relies on to a degree, are learned in a more generalizing way.
+\item It is generally recommended to use a time or scaffold split instead of a random split on the dataset as this provides a more realistic assessment of model performance \cite{lenselink2021multitask}. One could also tune model parameters with respect to the worst performing of many random splits. Additionally, an adversarial model could be used where an additional model constructs the training set. The resulting model would hence be the best performing on the most difficult split and would arguably generalize better.
+\item Maybe model generalization to a diverse dataset could be judged a priori to some extent. For example, one could hypothesize that similar distributions of neuron activations between the training and a diverse molecular dataset indicate better generalization. Similarly, a pruning method could be considered in which nodes are removed from the model if its loss reduction on the training set significantly outweighs the loss reduction on the predictions of a large diverse dataset.
+\item The training set could be augmented to be more representative of a large and diverse dataset. For example, more weight could be added to structurally underrepresented molecules in the training set.
+\end{itemize}
+
+Using any of the above approaches is challenging as they typically come with additional hyperparameters. Not only can the line between too little and too much regularization be narrow, there are also limited independent datasets available for tuning and validation of the approach. \\
+
+\subsubsection{Implications for retention time prediction}
+
+It is conceivable that logP predictions can be used as a proxy for RT prediction. However, one might have to consider that other factors besides logP influence RT. An alternative approach could be a transfer learning approach from existing RT datasets to the specific setup as presented by Yang et al. \cite{yang2021prediction}. The value of using RT in tandem mass spectrometry might be greatly improved by not just predicting RT but also errors. This way, molecules with small expected errors on RT can be identified as false positives more aggressively.
+
+\section{Conclusion}
+
+We set out to evaluate different machine learning algorithms for logP prediction in order to facilitate molecular structural identification with tandem mass spectrometry. Like others before us, we found that different types of models can show good performance. Both explicit feature selection, such as the use of counts of functional groups as well implicit feature selection through a GNN are feasible. Further, different models create highly, but not perfectly correlated predictions. This indicates that ensemble methods could further improve predictions.\\
+
+We conclude that a thorough understanding of the molecular space of both the training as well as the target molecules is essential for logP prediction. Models can show great in-sample performance but lack generalization, and vice versa. More powerful approaches tend to show better in-sample performance. Simpler models, such as MLR, might be more suitable for predicting logP out-of-sample. \\
+
+Modern techniques such as GNNs have been used for logP prediction, often in combination with multitask learning or transfer learning and with a specific set of target molecules. Many of the models geared towards logP prediction in broad molecular spaces, such as XlogP3-AA, have been developed many years ago. We have seen that multitask models might be valuable for creating generalizing GNNs for molecular property prediction. Most likely, further improvements could be made with the techniques outlined in the discussion.
+
+% Bibliography
+%-----------------------------------------------------------------
+\bibliography{refs} 
+\bibliographystyle{ieeetr}
+
+\end{document}

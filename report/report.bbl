@@ -1,0 +1,169 @@
+\begin{thebibliography}{10}
+
+\bibitem{van2012role}
+J.~M. van~den Ouweland and I.~P. Kema, ``The role of liquid
+  chromatography--tandem mass spectrometry in the clinical laboratory,'' {\em
+  Journal of chromatography B}, vol.~883, pp.~18--32, 2012.
+
+\bibitem{petrovic2005liquid}
+M.~Petrovi{\'c}, M.~D. Hernando, M.~S. D{\'\i}az-Cruz, and D.~Barcel{\'o},
+  ``Liquid chromatography--tandem mass spectrometry for the analysis of
+  pharmaceutical residues in environmental samples: a review,'' {\em Journal of
+  Chromatography A}, vol.~1067, no.~1-2, pp.~1--14, 2005.
+
+\bibitem{strittmatter2004application}
+E.~F. Strittmatter, L.~J. Kangas, K.~Petritis, H.~M. Mottaz, G.~A. Anderson,
+  Y.~Shen, J.~M. Jacobs, D.~G. Camp, and R.~D. Smith, ``Application of peptide
+  lc retention time information in a discriminant function for peptide
+  identification by tandem mass spectrometry,'' {\em Journal of proteome
+  research}, vol.~3, no.~4, pp.~760--769, 2004.
+
+\bibitem{yang2021prediction}
+Q.~Yang, H.~Ji, H.~Lu, and Z.~Zhang, ``Prediction of liquid chromatographic
+  retention time with graph neural networks to assist in small molecule
+  identification,'' {\em Analytical Chemistry}, vol.~93, no.~4, pp.~2200--2206,
+  2021.
+
+\bibitem{moruz2017peptide}
+L.~Moruz and L.~K{\"a}ll, ``Peptide retention time prediction,'' {\em Mass
+  spectrometry reviews}, vol.~36, no.~5, pp.~615--623, 2017.
+
+\bibitem{bouwmeester2019comprehensive}
+R.~Bouwmeester, L.~Martens, and S.~Degroeve, ``Comprehensive and empirical
+  evaluation of machine learning algorithms for small molecule lc retention
+  time prediction,'' {\em Analytical chemistry}, vol.~91, no.~5,
+  pp.~3694--3703, 2019.
+
+\bibitem{qu2021predicting}
+C.~Qu, B.~I. Schneider, A.~J. Kearsley, W.~Keyrouz, and T.~C. Allison,
+  ``Predicting kovats retention indices using graph neural networks,'' {\em
+  Journal of Chromatography A}, vol.~1646, p.~462100, 2021.
+
+\bibitem{tetko2004application}
+I.~V. Tetko and P.~Bruneau, ``Application of alogps to predict 1-octanol/water
+  distribution coefficients, logp, and logd, of astrazeneca in-house
+  database,'' {\em Journal of pharmaceutical sciences}, vol.~93, no.~12,
+  pp.~3103--3110, 2004.
+
+\bibitem{mannhold2009calculation}
+R.~Mannhold, G.~I. Poda, C.~Ostermann, and I.~V. Tetko, ``Calculation of
+  molecular lipophilicity: State-of-the-art and comparison of log p methods on
+  more than 96,000 compounds,'' {\em Journal of pharmaceutical sciences},
+  vol.~98, no.~3, pp.~861--893, 2009.
+
+\bibitem{lenselink2021multitask}
+E.~B. Lenselink and P.~F. Stouten, ``Multitask machine learning models for
+  predicting lipophilicity (logp) in the sampl7 challenge,'' {\em Journal of
+  Computer-Aided Molecular Design}, vol.~35, no.~8, pp.~901--909, 2021.
+
+\bibitem{capela2019multitask}
+F.~Capela, V.~Nouchi, R.~Van~Deursen, I.~V. Tetko, and G.~Godin, ``Multitask
+  learning on graph neural networks applied to molecular property
+  predictions,'' {\em arXiv preprint arXiv:1910.13124}, 2019.
+
+\bibitem{chen2021mrlogp}
+Y.-K. Chen, S.~Shave, and M.~Auer, ``Mrlogp: transfer learning enables accurate
+  logp prediction using small experimental training datasets,'' {\em
+  Processes}, vol.~9, no.~11, p.~2029, 2021.
+
+\bibitem{ulrich2021exploring}
+N.~Ulrich, K.-U. Goss, and A.~Ebert, ``Exploring the octanol--water partition
+  coefficient dataset using deep learning techniques and data augmentation,''
+  {\em Communications Chemistry}, vol.~4, no.~1, pp.~1--10, 2021.
+
+\bibitem{plante2018jplogp}
+J.~Plante and S.~Werner, ``Jplogp: an improved logp predictor trained using
+  predicted data,'' {\em Journal of cheminformatics}, vol.~10, no.~1,
+  pp.~1--10, 2018.
+
+\bibitem{wieder2020compact}
+O.~Wieder, S.~Kohlbacher, M.~Kuenemann, A.~Garon, P.~Ducrot, T.~Seidel, and
+  T.~Langer, ``A compact review of molecular property prediction with graph
+  neural networks,'' {\em Drug Discovery Today: Technologies}, vol.~37,
+  pp.~1--12, 2020.
+
+\bibitem{mansouri2018opera}
+K.~Mansouri, C.~M. Grulke, R.~S. Judson, and A.~J. Williams, ``Opera models for
+  predicting physicochemical properties and environmental fate endpoints,''
+  {\em Journal of cheminformatics}, vol.~10, no.~1, pp.~1--19, 2018.
+
+\bibitem{martel2013large}
+S.~Martel, F.~Gillerat, E.~Carosati, D.~Maiarelli, I.~V. Tetko, R.~Mannhold,
+  and P.-A. Carrupt, ``Large, chemically diverse dataset of log p measurements
+  for benchmarking studies,'' {\em European Journal of Pharmaceutical
+  Sciences}, vol.~48, no.~1-2, pp.~21--29, 2013.
+
+\bibitem{bergazin2021evaluation}
+T.~D. Bergazin, N.~Tielker, Y.~Zhang, J.~Mao, M.~R. Gunner, K.~Francisco,
+  C.~Ballatore, S.~M. Kast, and D.~L. Mobley, ``Evaluation of log p, pka, and
+  log d predictions from the sampl7 blind challenge,'' {\em Journal of
+  computer-aided molecular design}, vol.~35, no.~7, pp.~771--802, 2021.
+
+\bibitem{lopez2021multiple}
+K.~Lopez, S.~Pinheiro, and W.~J. Zamora, ``Multiple linear regression models
+  for predicting the n-octanol/water partition coefficients in the sampl7 blind
+  challenge,'' {\em Journal of computer-aided molecular design}, vol.~35,
+  no.~8, pp.~923--931, 2021.
+
+\bibitem{bjerrum2017molecular}
+E.~J. Bjerrum and R.~Threlfall, ``Molecular generation with recurrent neural
+  networks (rnns),'' {\em arXiv preprint arXiv:1705.04612}, 2017.
+
+\bibitem{welling2016semi}
+M.~Welling and T.~N. Kipf, ``Semi-supervised classification with graph
+  convolutional networks,'' in {\em J. International Conference on Learning
+  Representations (ICLR 2017)}, 2016.
+
+\bibitem{corso2020principal}
+G.~Corso, L.~Cavalleri, D.~Beaini, P.~Li{\`o}, and P.~Veli{\v{c}}kovi{\'c},
+  ``Principal neighbourhood aggregation for graph nets,'' {\em Advances in
+  Neural Information Processing Systems}, vol.~33, pp.~13260--13271, 2020.
+
+\bibitem{ryu2018deeply}
+S.~Ryu, J.~Lim, S.~H. Hong, and W.~Y. Kim, ``Deeply learning molecular
+  structure-property relationships using attention-and gate-augmented graph
+  convolutional network,'' {\em arXiv preprint arXiv:1805.10988}, 2018.
+
+\bibitem{you2020design}
+J.~You, Z.~Ying, and J.~Leskovec, ``Design space for graph neural networks,''
+  {\em Advances in Neural Information Processing Systems}, vol.~33,
+  pp.~17009--17021, 2020.
+
+\bibitem{lui2020comparison}
+R.~Lui, D.~Guan, and S.~Matthews, ``A comparison of molecular representations
+  for lipophilicity quantitative structure--property relationships with results
+  from the sampl6 logp prediction challenge,'' {\em Journal of computer-aided
+  molecular design}, vol.~34, no.~5, pp.~523--534, 2020.
+
+\bibitem{teresa_danielle_bergazin_2021_5637494}
+T.~D. Bergazin, D.~L. Mobley, M.~Amezcua, H.~Grosjean, M.~Isik, D.~Slochower,
+  J.~Chodera, N.~Tielker, D.~Ray, S.~Sasmal, and K.~Murakumo,
+  ``{samplchallenges/SAMPL7: Version 1.1: Update logP analysis; release PHIP2
+  analysis},'' Nov. 2021.
+
+\bibitem{cheng2007computation}
+T.~Cheng, Y.~Zhao, X.~Li, F.~Lin, Y.~Xu, X.~Zhang, Y.~Li, R.~Wang, and L.~Lai,
+  ``Computation of octanol- water partition coefficients by guiding an additive
+  model with knowledge,'' {\em Journal of chemical information and modeling},
+  vol.~47, no.~6, pp.~2140--2148, 2007.
+
+\bibitem{caruana1997multitask}
+R.~Caruana, ``Multitask learning,'' {\em Machine learning}, vol.~28, no.~1,
+  pp.~41--75, 1997.
+
+\bibitem{domingo2019metlin}
+X.~Domingo-Almenara, C.~Guijas, E.~Billings, J.~R. Montenegro-Burke,
+  W.~Uritboonthai, A.~E. Aisporna, E.~Chen, H.~P. Benton, and G.~Siuzdak, ``The
+  metlin small molecule dataset for machine learning-based retention time
+  prediction,'' {\em Nature communications}, vol.~10, no.~1, pp.~1--9, 2019.
+
+\bibitem{isert2022qmugs}
+C.~Isert, K.~Atz, J.~Jim{\'e}nez-Luna, and G.~Schneider, ``Qmugs, quantum
+  mechanical properties of drug-like molecules,'' {\em Scientific Data},
+  vol.~9, no.~1, pp.~1--11, 2022.
+
+\bibitem{weiss2016survey}
+K.~Weiss, T.~M. Khoshgoftaar, and D.~Wang, ``A survey of transfer learning,''
+  {\em Journal of Big data}, vol.~3, no.~1, pp.~1--40, 2016.
+
+\end{thebibliography}

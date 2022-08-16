@@ -1,12 +1,10 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 import statsmodels.api as sm
 
 from rdkit import Chem
-from rdkit.Chem import Fragments
-from constants import Columns, Datasets
+from constants import Datasets
 from structures.dataset import Dataset
 from structures.feature import create_atom_count_features, create_default_fragment_counts_features
 
@@ -22,12 +20,10 @@ class MultipleLinearRegressionModel():
         self._features = []
     
     def use_dataset(self, X_train, X_test, y_train, y_test):
-        training_set_molecules, test_set_molecules, self._training_set_logps, self._test_set_logps = X_train, X_test, y_train, y_test
-        self._training_set_molecules = [Chem.MolFromSmiles(smiles) for smiles in training_set_molecules]
-        self._test_set_molecules = [Chem.MolFromSmiles(smiles) for smiles in test_set_molecules]
+        self._training_set_molecules, self._test_set_molecules, self._training_set_logps, self._test_set_logps = X_train, X_test, y_train, y_test
 
     def fit_model(self, print_summary=True):
-        calculated_features = self._calculate_features(self._training_set_molecules)
+        calculated_features = self._calculate_features([Chem.MolFromSmiles(smiles) for smiles in self._training_set_molecules])
 
         Y = pd.DataFrame(self._training_set_logps)
         X = pd.DataFrame(calculated_features, columns=[feature.name for feature in self._features])
@@ -41,14 +37,19 @@ class MultipleLinearRegressionModel():
 
     def set_features(self, features):
         self._features = features
+    
+    def predict(self, smiles_list):
+        calculated_features = self._calculate_features([Chem.MolFromSmiles(smiles) for smiles in smiles_list])
+
+        X = pd.DataFrame(calculated_features, columns=[feature.name for feature in self._features])
+        X = sm.add_constant(X, has_constant='add')
+
+        return self._model_results.get_prediction(X).summary_frame()['mean'].to_list()
         
     def compute_rmse(self, test=True):
         molecules = self._test_set_molecules if test else self._training_set_molecules
-        calculated_features = self._calculate_features(molecules)
-        X = pd.DataFrame(calculated_features, columns=[feature.name for feature in self._features])
-        X = sm.add_constant(X)
 
-        logp_predictions = self._model_results.get_prediction(X).summary_frame()['mean'].to_list()
+        logp_predictions = self.predict(molecules)
         logp_actual = self._test_set_logps if test else self._training_set_logps
 
         return np.sqrt(np.mean(np.square(

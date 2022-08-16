@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2019/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: report.aux
+The style file: ieeetr.bst
+Database file #1: refs.bib
+Warning--entry type for "teresa_danielle_bergazin_2021_5637494" isn't style-file defined
+--line 226 of file refs.bib
+You've used 31 entries,
+            1876 wiz_defined-function locations,
+            664 strings with 10456 characters,
+and the built_in function-call counts, 9876 in all, are:
+= -- 977
+> -- 469
+< -- 0
++ -- 167
+- -- 136
+* -- 775
+:= -- 1426
+add.period$ -- 31
+call.type$ -- 31
+change.case$ -- 31
+chr.to.int$ -- 0
+cite$ -- 31
+duplicate$ -- 468
+empty$ -- 834
+format.name$ -- 136
+if$ -- 2364
+int.to.chr$ -- 0
+int.to.str$ -- 31
+missing$ -- 30
+newline$ -- 96
+num.names$ -- 31
+pop$ -- 60
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 350
+stack$ -- 0
+substring$ -- 721
+swap$ -- 220
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 105
+width$ -- 33
+write$ -- 322
+(There was 1 warning)

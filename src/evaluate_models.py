@@ -1,68 +1,187 @@
-
-
 import numpy as np
 import pandas as pd
+
+from torch_geometric.nn import PNAConv, GeneralConv
+from torch_geometric.seed import seed_everything
+
 from constants import Columns, Datasets
-from models.gnn.gnn_model import GNNModel
+from structures.dataset import Dataset
+from structures.feature import create_atom_count_features, create_default_fragment_counts_features
+from scrapers.vcclab import VcclabScraper
 from models.multiple_linear_regression import MultipleLinearRegressionModel
 from models.random_forrest import RandomForrestModel
 from models.rnn import RNN
-from scrapers.vcclab import VcclabScraper
-from structures.dataset import Dataset
-from structures.feature import create_atom_count_features, create_default_fragment_counts_features
+from models.pytorch_gnn.pytorch_gnn import GraphNeuralNetModel
+from models.pytorch_gnn.pytorch_gnn_multi import MultiTaskGraphNeuralNetModel
 
 
-def evaluate_mlr_model(dataset):
-    mlrm = MultipleLinearRegressionModel()
+def evaluate_mlr_model(dataset_train, dataset_martel, dataset_sampl7):
+    rmses_test = []
+    rmses_train = []
+    rmses_martel = []
+    rmses_sampl7 = []
+
     atom_count_features = create_atom_count_features(atoms=['C', 'O', 'N', 'F', 'Br', 'Cl'])
     default_fragment_counts_features = create_default_fragment_counts_features()
-    mlrm.set_features(atom_count_features + default_fragment_counts_features)
-
-    rmses = []
-    for X_train, X_val, y_train, y_val in dataset.get_k_fold_train_val_split():
-        mlrm.use_dataset(X_train, X_val, y_train, y_val)
+    
+    for i in range(5):
+        seed_everything(i)
+        mlrm = MultipleLinearRegressionModel()
+        mlrm.set_features(atom_count_features + default_fragment_counts_features)
+        mlrm.use_dataset(dataset_train._smiles_list_train, dataset_train._smiles_list_test, dataset_train._logp_list_train, dataset_train._logp_list_test)
         mlrm.fit_model()
 
-        rmses.append(mlrm.compute_rmse())
+        rmses_test.append(mlrm.compute_rmse())
+        rmses_train.append(mlrm.compute_rmse(test=False))
 
-    return rmses
+        mlrm.use_dataset(dataset_train._smiles_list_train, dataset_martel.smiles_list, dataset_train._logp_list_train, dataset_martel.logp_list)
+        rmses_martel.append(mlrm.compute_rmse())
+        pd.DataFrame([{Columns.LOGP: v} for v in mlrm.predict(dataset_martel.smiles_list)]).to_csv(f'./output/mlr/predictions_{i}.csv', index=False)
 
-def evaluate_rf_model(dataset):
-    rf = RandomForrestModel()
+        mlrm.use_dataset(dataset_train._smiles_list_train, dataset_sampl7.smiles_list, dataset_train._logp_list_train, dataset_sampl7.logp_list)
+        rmses_sampl7.append(mlrm.compute_rmse())
+
+    return rmses_test, rmses_train, rmses_martel, rmses_sampl7
+
+def evaluate_rf_model(dataset_train, dataset_martel, dataset_sampl7):
+    rmses_test = []
+    rmses_train = []
+    rmses_martel = []
+    rmses_sampl7 = []
+
     atom_count_features = create_atom_count_features(atoms=['C', 'O', 'N', 'F', 'Br', 'Cl'])
     default_fragment_counts_features = create_default_fragment_counts_features()
-    rf.set_features(atom_count_features + default_fragment_counts_features)
 
-    rmses = []
-    for X_train, X_val, y_train, y_val in dataset.get_k_fold_train_val_split():
-        rf.use_dataset(X_train, X_val, y_train, y_val)
+    for i in range(5):
+        seed_everything(i)
+
+        rf = RandomForrestModel()
+        rf.set_features(atom_count_features + default_fragment_counts_features)
+
+        rf.use_dataset(dataset_train._smiles_list_train, dataset_train._smiles_list_test, dataset_train._logp_list_train, dataset_train._logp_list_test)
         rf.fit_model()
 
-        rmses.append(rf.compute_rmse())
+        rmses_test.append(rf.compute_rmse())
+        rmses_train.append(rf.compute_rmse(test=False))
+
+        rf.use_dataset(dataset_train._smiles_list_train, dataset_martel.smiles_list, dataset_train._logp_list_train, dataset_martel.logp_list)
+        rmses_martel.append(rf.compute_rmse())
+        pd.DataFrame([{Columns.LOGP: v} for v in rf.predict(dataset_martel.smiles_list)]).to_csv(f'./output/rf/predictions_{i}.csv', index=False)
+
+        rf.use_dataset(dataset_train._smiles_list_train, dataset_sampl7.smiles_list, dataset_train._logp_list_train, dataset_sampl7.logp_list)
+        rmses_sampl7.append(rf.compute_rmse())
     
-    return rmses
+    return rmses_test, rmses_train, rmses_martel, rmses_sampl7
 
-def evaluate_rnn_model(dataset):
-    rmses = []
-    for X_train, X_val, y_train, y_val in dataset.get_k_fold_train_val_split():
+def evaluate_rnn_model(dataset_train, dataset_martel, dataset_sampl7):
+    rmses_test = []
+    rmses_train = []
+    rmses_martel = []
+    rmses_sampl7 = []
+
+    for i in range(5):
+        seed_everything(i)
+
         rnn = RNN()
-        rnn.use_dataset(X_train, X_val, y_train, y_val)
-        rnn.fit_model()
+        rnn.use_dataset(dataset_train._smiles_list_train, dataset_train._smiles_list_test, dataset_train._logp_list_train, dataset_train._logp_list_test)
+        rnn.fit_model(epochs=1000)
 
-        rmses.append(rnn.compute_rmse())
+        rmses_test.append(rnn.compute_rmse())
+        rmses_train.append(rnn.compute_rmse(test=False))
 
-    return rmses
+        rnn.use_dataset(dataset_train._smiles_list_train, dataset_martel.smiles_list, dataset_train._logp_list_train, dataset_martel.logp_list)
+        rmses_martel.append(rnn.compute_rmse())
+        pd.DataFrame([{Columns.LOGP: v} for v in rnn.predict(dataset_martel.smiles_list)]).to_csv(f'./output/rnn/predictions_{i}.csv', index=False)
 
-def evaluate_gnn_model(dataset):
-    rmses = []
-    for X_train, X_val, y_train, y_val in dataset.get_k_fold_train_val_split():
-        gnn = GNNModel()
-        gnn.use_dataset(X_train, X_val, y_train, y_val)
+        rnn.use_dataset(dataset_train._smiles_list_train, dataset_sampl7.smiles_list, dataset_train._logp_list_train, dataset_sampl7.logp_list)
+        rmses_sampl7.append(rnn.compute_rmse())
 
-        rmse = gnn.fit_model()
-        rmses.append(rmse)
+    return rmses_test, rmses_train, rmses_martel, rmses_sampl7
 
-    return rmses
+def evaluate_gnn_model(dataset_train, dataset_martel, dataset_sampl7):
+    rmses_test = []
+    rmses_train = []
+    rmses_martel = []
+    rmses_sampl7 = []
+
+    for i in range(5):
+        seed_everything(i)
+        gnn = GraphNeuralNetModel()
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_train._smiles_list_test, dataset_train._logp_list_train, dataset_train._logp_list_test)
+        gnn.fit_model(epochs=2000, lr=0.0001, lr_decay=0.999)
+
+        rmses_test.append(gnn.compute_rmse())
+        rmses_train.append(gnn.compute_rmse(test=False))
+
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_martel.smiles_list, dataset_train._logp_list_train, dataset_martel.logp_list)
+        rmses_martel.append(gnn.compute_rmse())
+        pd.DataFrame([{Columns.LOGP: v} for v in gnn.predict(dataset_martel.smiles_list)]).to_csv(f'./output/gnn/predictions_{i}.csv', index=False)
+
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_sampl7.smiles_list, dataset_train._logp_list_train, dataset_sampl7.logp_list)
+        rmses_sampl7.append(gnn.compute_rmse())
+
+    return rmses_test, rmses_train, rmses_martel, rmses_sampl7
+
+def evaluate_gnn_pna_model(dataset_train, dataset_martel, dataset_sampl7):
+    rmses_test = []
+    rmses_train = []
+    rmses_martel = []
+    rmses_sampl7 = []
+
+    for i in range(5):
+        seed_everything(i)
+        gnn = GraphNeuralNetModel({
+            'convolutional_layer': PNAConv,
+            'convolutional_layer_args': {
+                'aggregators': ['sum', 'max', 'var'],
+                'scalers': ['identity', 'amplification', 'attenuation'],
+                'deg': True
+            },
+            'dropout': 0.5
+        })
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_train._smiles_list_test, dataset_train._logp_list_train, dataset_train._logp_list_test)
+        gnn.fit_model(epochs=2000, lr=0.0001, lr_decay=0.999)
+
+        rmses_test.append(gnn.compute_rmse())
+        rmses_train.append(gnn.compute_rmse(test=False))
+
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_martel.smiles_list, dataset_train._logp_list_train, dataset_martel.logp_list)
+        rmses_martel.append(gnn.compute_rmse())
+        pd.DataFrame([{Columns.LOGP: v} for v in gnn.predict(dataset_martel.smiles_list)]).to_csv(f'./output/gnn_pna/predictions_{i}.csv', index=False)
+
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_sampl7.smiles_list, dataset_train._logp_list_train, dataset_sampl7.logp_list)
+        rmses_sampl7.append(gnn.compute_rmse())
+
+    return rmses_test, rmses_train, rmses_martel, rmses_sampl7
+
+def evaluate_gnn_attention_model(dataset_train, dataset_martel, dataset_sampl7):
+    rmses_test = []
+    rmses_train = []
+    rmses_martel = []
+    rmses_sampl7 = []
+
+    for i in range(5):
+        seed_everything(i)
+        gnn = GraphNeuralNetModel({
+            'convolutional_layer': GeneralConv,
+            'convolutional_layer_args': {
+                'attention': True
+            }
+        })
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_train._smiles_list_test, dataset_train._logp_list_train, dataset_train._logp_list_test)
+        gnn.fit_model(epochs=2000, lr=0.0001, lr_decay=0.999)
+
+        rmses_test.append(gnn.compute_rmse())
+        rmses_train.append(gnn.compute_rmse(test=False))
+
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_martel.smiles_list, dataset_train._logp_list_train, dataset_martel.logp_list)
+        rmses_martel.append(gnn.compute_rmse())
+        pd.DataFrame([{Columns.LOGP: v} for v in gnn.predict(dataset_martel.smiles_list)]).to_csv(f'./output/gnn_attention/predictions_{i}.csv', index=False)
+
+        gnn.use_dataset(dataset_train._smiles_list_train, dataset_sampl7.smiles_list, dataset_train._logp_list_train, dataset_sampl7.logp_list)
+        rmses_sampl7.append(gnn.compute_rmse())
+
+    return rmses_test, rmses_train, rmses_martel, rmses_sampl7
 
 def evaluate_alogps_model(dataset, scrape=False):
     smiles_to_logp = {smiles: dataset.logp_list[i] for i, smiles in enumerate(dataset.smiles_list)}
@@ -88,25 +207,149 @@ def evaluate_alogps_model(dataset, scrape=False):
         se += np.square(logp_estimate - logp)
         count += 1
     
-    return [np.sqrt(se / count)]
+    return np.mean([np.sqrt(se / count)])
 
 def evaluate_models():
-    dataset = Dataset()
-    dataset.load_data(Datasets.OPERA_LOGP)
+    dataset_train = Dataset()
+    dataset_train.load_data(Datasets.OPERA_EX_MARTEL_AND_SAMPL7_LOGP)
+
+    dataset_martel = Dataset()
+    dataset_martel.load_data(Datasets.MARTEL_LOGP)
+
+    dataset_sampl7 = Dataset()
+    dataset_sampl7.load_data(Datasets.SAMPL7_LOGP)
     
-    mlr_mean_rmse = np.mean(evaluate_mlr_model(dataset))
-    rf_mean_rmse = np.mean(evaluate_rf_model(dataset))
-    rnn_mean_rmse = np.mean(evaluate_rnn_model(dataset))
-    gnn_mean_rmse = np.mean(evaluate_gnn_model(dataset))
+    mlr_rmses_test, mlr_rmses_train, mlr_rmses_martel, mlr_rmses_sample7 = evaluate_mlr_model(dataset_train, dataset_martel, dataset_sampl7)
+    rf_rmses_test, rf_rmses_train, rf_rmses_martel, rf_rmses_sample7 = evaluate_rf_model(dataset_train, dataset_martel, dataset_sampl7)
+    rnn_rmses_test, rnn_rmses_train, rnn_rmses_martel, rnn_rmses_sample7 = evaluate_rnn_model(dataset_train, dataset_martel, dataset_sampl7)
+    gnn_rmses_test, gnn_rmses_train, gnn_rmses_martel, gnn_rmses_sample7 = evaluate_gnn_model(dataset_train, dataset_martel, dataset_sampl7)
+    gnn_pna_rmses_test, gnn_pna_rmses_train, gnn_pna_rmses_martel, gnn_pna_rmses_sample7 = evaluate_gnn_pna_model(dataset_train, dataset_martel, dataset_sampl7)
+    gnn_attention_rmses_test, gnn_attention_rmses_train, gnn_attention_rmses_martel, gnn_attention_rmses_sample7 = evaluate_gnn_attention_model(dataset_train, dataset_martel, dataset_sampl7)
 
     print(100 * '-')
-    print('Multiple Linear Regression Mean Test RMSE: ', mlr_mean_rmse)
-    print('Random Forrest Mean Test RMSE: ', rf_mean_rmse)
-    print('RNN Mean Test RMSE: ', rnn_mean_rmse)
-    print('GNN Mean Test RMSE: ', gnn_mean_rmse)
+    print('Multiple Linear Regression Train RMSE: ', np.mean(mlr_rmses_train), ' +- ', np.std(mlr_rmses_train))
+    print('Multiple Linear Regression Test RMSE: ', np.mean(mlr_rmses_test), ' +- ', np.std(mlr_rmses_test))
+    print('Multiple Linear Regression Martel RMSE: ', np.mean(mlr_rmses_martel), ' +- ', np.std(mlr_rmses_martel))
+    print('Multiple Linear Regression Sampl7 RMSE: ', np.mean(mlr_rmses_sample7), ' +- ', np.std(mlr_rmses_sample7))
+    print('Random Forrest Train RMSE: ', np.mean(rf_rmses_train), ' +- ', np.std(rf_rmses_train))
+    print('Random Forrest Test RMSE: ', np.mean(rf_rmses_test), ' +- ', np.std(rf_rmses_test))
+    print('Random Forrest Martel RMSE: ', np.mean(rf_rmses_martel), ' +- ', np.std(rf_rmses_martel))
+    print('Random Forrest Sampl7 RMSE: ', np.mean(rf_rmses_sample7), ' +- ', np.std(rf_rmses_sample7))
+    print('RNN Train RMSE: ', np.mean(rnn_rmses_train), ' +- ', np.std(rnn_rmses_train))
+    print('RNN Test RMSE: ', np.mean(rnn_rmses_test), ' +- ', np.std(rnn_rmses_test))
+    print('RNN Martel RMSE: ', np.mean(rnn_rmses_martel), ' +- ', np.std(rnn_rmses_martel))
+    print('RNN Sampl7 RMSE: ', np.mean(rnn_rmses_sample7), ' +- ', np.std(rnn_rmses_sample7))
+    print('GNN Train RMSE: ', np.mean(gnn_rmses_train), ' +- ', np.std(gnn_rmses_train))
+    print('GNN Test RMSE: ', np.mean(gnn_rmses_test), ' +- ', np.std(gnn_rmses_test))
+    print('GNN Martel RMSE: ', np.mean(gnn_rmses_martel), ' +- ', np.std(gnn_rmses_martel))
+    print('GNN Sampl7 RMSE: ', np.mean(gnn_rmses_sample7), ' +- ', np.std(gnn_rmses_sample7))
+    print('GNN PNA Train RMSE: ', np.mean(gnn_pna_rmses_train), ' +- ', np.std(gnn_pna_rmses_train))
+    print('GNN PNA Test RMSE: ', np.mean(gnn_pna_rmses_test), ' +- ', np.std(gnn_pna_rmses_test))
+    print('GNN PNA Martel RMSE: ', np.mean(gnn_pna_rmses_martel), ' +- ', np.std(gnn_pna_rmses_martel))
+    print('GNN PNA Sampl7 RMSE: ', np.mean(gnn_pna_rmses_sample7), ' +- ', np.std(gnn_pna_rmses_sample7))
+    print('GNN Attention Train RMSE: ', np.mean(gnn_attention_rmses_train), ' +- ', np.std(gnn_attention_rmses_train))
+    print('GNN Attention Test RMSE: ', np.mean(gnn_attention_rmses_test), ' +- ', np.std(gnn_attention_rmses_test))
+    print('GNN Attention Martel RMSE: ', np.mean(gnn_attention_rmses_martel), ' +- ', np.std(gnn_attention_rmses_martel))
+    print('GNN Attention Sampl7 RMSE: ', np.mean(gnn_attention_rmses_sample7), ' +- ', np.std(gnn_attention_rmses_sample7))
+
+def evaluate_model_correlation_and_error_distribution():
+    dataset_martel = Dataset()
+    dataset_martel.load_data(Datasets.MARTEL_LOGP)
+
+    martel_list = [v[0] for v in dataset_martel.logp_list]
+
+    model_predictions = {}
+    model_errors = {}
+    models = ['mlr', 'rf', 'rnn', 'gnn', 'gnn_pna', 'gnn_attention', 'gnn_multi']
+    for model in models:
+        for i in range(5):
+            result = pd.read_csv(f'./output/{model}/predictions_{i}.csv')[Columns.LOGP].to_list()
+
+            if model not in model_predictions:
+                model_predictions[model] = []
+                model_errors[model] = []
+
+            model_predictions[model].append(result)
+            model_errors[model].append([prediction - martel_list[i] for i, prediction in enumerate(result)])
+
+    print('Correlation matrix:')
+    print(np.corrcoef([np.mean(model_errors[model], axis=0) for model in models]))
+
+    mean_predictions = np.mean([np.mean(model_predictions[model], axis=0) for model in models], axis=0)
+    print('Mean prediction RMSE:')
+    print(np.sqrt(np.mean(np.square([mean_prediction - martel_list[i] for i, mean_prediction in enumerate(mean_predictions)]))))
+
+    error_bins = {}
+    for model in models:
+        error_bins[model] = {}
+        for i in range(5):
+            for j, prediction in enumerate(model_predictions[model][i]):
+                bin = None
+                if np.abs(prediction - martel_list[j]) < 0.5:
+                    bin = '0-0.5'
+                elif np.abs(prediction - martel_list[j]) < 1:
+                    bin = '0.5-1'
+                elif np.abs(prediction - martel_list[j]) < 1.5:
+                    bin = '1-1.5'
+                elif np.abs(prediction - martel_list[j]) < 2:
+                    bin = '1.5-2'
+                else:
+                    bin = '2<'
+
+                if bin not in error_bins[model]:
+                    error_bins[model][bin] = 0
+
+                # Such that we get percentages
+                error_bins[model][bin] += 100 / (5 * len(martel_list))
+    
+    print('Error distributions:')
+    print(error_bins)
+
+def evaluate_gnn_multi():
+    dataset = Dataset()
+    dataset.load_data(Datasets.OPERA_EX_MARTEL_AND_SAMPL7_LOGP_MULTITASK)
+
+    dataset_logp = Dataset()
+    dataset_logp.load_data(Datasets.OPERA_EX_MARTEL_AND_SAMPL7_LOGP)
+
+    dataset_martel = Dataset()
+    dataset_martel.load_data(Datasets.MARTEL_LOGP)
+
+    dataset_sampl7 = Dataset()
+    dataset_sampl7.load_data(Datasets.SAMPL7_LOGP)
+
+    rmses_test = []
+    rmses_train = []
+    rmses_martel = []
+    rmses_sampl7 = []
+
+    for i in range(5):
+        seed_everything(i)
+        model = MultiTaskGraphNeuralNetModel()
+
+        model.use_dataset(dataset._smiles_list_train, dataset._smiles_list_test, dataset._logp_list_train, dataset._logp_list_test)
+        model.fit_model(epochs=2000, lr=0.0001, mode='both')
+
+        model.use_dataset(dataset_logp._smiles_list_train, dataset_logp._smiles_list_test, dataset_logp._logp_list_train, dataset_logp._logp_list_test)
+        rmses_train.append(model.compute_rmse(test=False, mode='logp'))
+        rmses_test.append(model.compute_rmse(test=True, mode='logp'))
+
+        model.use_dataset(dataset_logp._smiles_list_train, dataset_martel.smiles_list, dataset_logp._logp_list_train, dataset_martel.logp_list)
+        rmses_martel.append(model.compute_rmse(mode='logp'))
+
+        model.use_dataset(dataset_logp._smiles_list_train, dataset_sampl7.smiles_list, dataset_logp._logp_list_train, dataset_sampl7.logp_list)
+        rmses_sampl7.append(model.compute_rmse(mode='logp'))
+
+        pd.DataFrame([{Columns.LOGP: v[0].item()} for v in model.predict(dataset_martel.smiles_list, mode='logp')]).to_csv(f'./output/gnn_multi/predictions_{i}.csv', index=False)
+        model.save_model(f'./output/gnn_multi/model_{i}/')
+
+    print('GNN Multi Train RMSE: ', np.mean(rmses_train), ' +- ', np.std(rmses_train))
+    print('GNN Multi Test RMSE: ', np.mean(rmses_test), ' +- ', np.std(rmses_test))
+    print('GNN Multi Martel RMSE: ', np.mean(rmses_martel), ' +- ', np.std(rmses_martel))
+    print('GNN Multi Sampl7 RMSE: ', np.mean(rmses_sampl7), ' +- ', np.std(rmses_sampl7))
+
 
 if __name__ == '__main__':
     #evaluate_models()
-    dataset = Dataset()
-    dataset.load_data(Datasets.OPERA_LOGP)
-    print(evaluate_alogps_model(dataset))
+    evaluate_gnn_multi()
+    #evaluate_model_correlation_and_error_distribution()

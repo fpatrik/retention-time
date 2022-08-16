@@ -1,7 +1,4 @@
 from rdkit.Chem import Fragments
-from rdkit.Chem import MCS
-from rdkit import Chem
-import random
 
 class Feature:
     def __init__(self, name, feature_lambda):
