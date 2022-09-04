@@ -49,13 +49,13 @@
 \title{Retention time prediction to facilitate molecular structural identification with tandem mass spectrometry}
 \author{Patrik Friedlos\\
   \small DAS ETH Data Science Capstone Project at SDSC\\
-  \small Supervised by Eliza Harris and Lillian Gasser
+  \small Supervised by Eliza Harris and Lilian Gasser
 }
 
 \begin{document}
 \maketitle
 
-\abstract{Comparing measured and predicted retention time can improve molecular identification in tandem mass spectrometry. We assess a range of different machine learning methods to predict hydrophobicity, a molecular property that could be used as a proxy for retention time. The performance of the models is evaluated on the benchmark Martel and SAMPL7 datasets. We find that more powerful models perform better in-sample but do not necessarily out-of-sample. We also find evidence that ensemble methods can outperform specific models. Additionally, a multitask learning model shows promise for improving the generalization of graph neural networks for hydrophobicity prediction. Finally, we discuss how the generalization of graph neural networks for molecular property prediction could be improved further.}
+\abstract{Comparing measured and predicted retention time can improve molecular identification in tandem mass spectrometry. We assess a range of different machine learning methods to predict hydrophobicity, a molecular property that could be used as a proxy for retention time. The performance of the models is evaluated on the benchmark Martel and SAMPL7 datasets. We find that more powerful models perform better in-sample but not necessarily out-of-sample. We also find evidence that ensemble methods can outperform specific models. Additionally, a multitask learning model shows promise for improving the generalization of graph neural networks for hydrophobicity prediction. Finally, we discuss how the generalization of graph neural networks for molecular property prediction could be improved further.}
 
 \section{Introduction}
 
@@ -292,6 +292,15 @@ The binned absolute errors of the models can be considered to get a better under
 \label{table3}
 \end{center}
 
+We can plot the prediction error as a function of measured logP to assess if the models perform better for some logP ranges. Figure \ref{figure2} shows the prediction errors of the MLR model against measured logP of the Martel dataset. At least visually, the distribution of prediction errors appears to be homoscedastic. However, the model systematically underestimates logP values for the martel dataset. The pattern becomes more pronounced for higher measured logP values. This finding is consistent across different models and can probably be attributed to the differences between the OPERA and the Martel datasets. Whereas the peak of the logP distribution is around a value of 2 for Opera, it is above 4 for the Martel dataset. The models are hence biased towards the logP distribution of the training data.
+
+\begin{figure}[hp]
+\centering
+\captionsetup{width=0.8\textwidth}
+\includegraphics[width=\textwidth]{./../plots/martel_errors_mlr.png}
+\caption{The plot shows the prediction error against the measured logP values for each molecule in the Martel dataset. Although the errors appear homoscedastic, the model systematically underestimates logP values as indicated with the linear regression line.}
+\end{figure}
+
 We can consider the correlation of errors of the different models in order to evaluate to what extent they have learned different information. In case correlations between models are low, an ensemble model might be able to outperform the individual models. Table \ref{table4} shows the error correlations of the different models on the Martel dataset.\\
 
 \begin{center}
@@ -391,7 +400,9 @@ Finally, we evaluate the performance of the models on the highly specific SAMPL7
 
 The results generally show that in-sample performance increases with more powerful methods. As expected, these methods were also more prone to overfitting. The performance of the RNN is remarkable as it performs similarly to the GNNs without any explicit notion of the graph structure of the molecules. For GNNs we found little benefit in using PNA or attention layers as opposed to a GCN. \\
 
-When it comes to out-of-sample performance, we find that more powerful models offer little benefit a priori. In fact, the MLR performs the best on the Martel dataset despite being the simplest model. Furthermore, there seems to be little correlation between the generalization of the models to Martel and SAMPL7. Maybe this could be attributed to the different chemical spaces of the two datasets. We also have to consider that SAMPL7 is a small dataset of specific molecules and is not representative for broad model generalization. \\
+When it comes to out-of-sample performance, we find that more powerful models offer little benefit a priori. In fact, the MLR performs the best on the Martel dataset despite being the simplest model. Furthermore, there seems to be little correlation between the generalization of the models to Martel and SAMPL7. Maybe this could be attributed to the different chemical spaces and logP ranges of the two datasets. We also have to consider that SAMPL7 is a small dataset of specific molecules and is not representative for broad model generalization. \\
+
+The discrepancy between in-sample and out-of-sample performance can in part be explained by model bias towards the logP value distribution of the in-sample dataset. We have seen that a model trained on the Opera dataset systematically underestimates logP on the Martel dataset. If we train a MLR model with training data from Opera but sampled according to a uniform logP distribution using bins on (-2, 8), RMSE on Martel is reduced from 1.20 to 1.16. If we were to sample according to the logP distribution of Martel, RMSE drops to just 0.96. Of course, the logP distribution of the target dataset can not be known in advance. One could however consider an approach where models are iteratively trained with data sampled according to the logP distribution of the predictions of the previous model.\\
 
 The multitask model might offer a good compromise between in-sample and out-of-sample performance. The loss of performance due to the helper tasks on the in-sample test set is negligible. However, generalization seems to be better, at least to the Martel dataset. \\
 
@@ -399,11 +410,13 @@ One could argue that the models perform reasonably well on the SAMPL7 dataset, c
 
 The variance of model performance is relatively high in particular for the GNNs. This suggests that a significant part of the performance has to be attributed to the initialization. An ensemble of models could be used to improve this issue. \\
 
+The computational cost of running the models is difficult to estimate, as it depends on the implementation as well as the available hardware. One also has to distinguish between the cost of training the models and using the models. The former is typically high for neural nets. Generally an MLR model should be orders of magnitudes faster than a GNN model or a physical models such as COSMO-RS. Predictions can be parallelized however, lowering the runtime of batch predictions if required. \\
+
 \subsubsection{Ideas for model improvement}
 
 The implmentation of the models was kept relatively straightforward. In particular, we did not perform systematic hyperparameter optimization. For the models with explicit feature selection, the MLR and the RF, only atom counts and default fragment counts of RDKit were used. More careful tuning of the models would probably increase performance in some cases. \\
 
-An interesting paradigm for logP prediction is making it relative to reference molecules with known logP. Such an approach is used by XLOGP3, amongst others \cite{cheng2007computation}. Although this comes with additional challenges, such as having to determine the appropriate reference molecules, it might also improve model performance. \\
+An interesting paradigm for logP prediction is making it relative to reference molecules with known logP. Such an approach is used by XLOGP3, amongst others \cite{cheng2007computation}. Although this comes with additional challenges, such as having to determine the appropriate reference molecules, it might also improve model performance. In particular because such models might not acquire the systematic bias towards logP values found in the training set. \\
 
 Further improvements could be made by using more datasets. An aggregation of multiple datasets could cover a broader range of molecules and yield increased performance. Different sampling and splitting techniques, such as scaffold splitting, could also be considered. \\
 

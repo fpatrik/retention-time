@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.7.10)  16 AUG 2022 18:22
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019/Debian) (preloaded format=pdflatex 2022.7.10)  4 SEP 2022 14:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -401,180 +401,203 @@ Underfull \hbox (badness 10000) in paragraph at lines 265--266
  []
 
 [8]
-Underfull \hbox (badness 10000) in paragraph at lines 295--296
+
+LaTeX Warning: Reference `figure2' on page 9 undefined on input line 295.
+
+<./../plots/martel_errors_mlr.png, id=52, 462.528pt x 346.896pt>
+File: ./../plots/martel_errors_mlr.png Graphic file (type png)
+<use ./../plots/martel_errors_mlr.png>
+Package pdftex.def Info: ./../plots/martel_errors_mlr.png  used on input line 3
+00.
+(pdftex.def)             Requested size: 345.0pt x 258.76335pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 304--305
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 300--300
+[9 <./../plots/martel_errors_mlr.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 309--309
 []|\OT1/cmr/m/n/9 GNN
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 300--300
+Underfull \hbox (badness 10000) in paragraph at lines 309--309
 \OT1/cmr/m/n/9 +
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 300--300
+Underfull \hbox (badness 10000) in paragraph at lines 309--309
 []|\OT1/cmr/m/n/9 GNN
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 300--301
+Underfull \hbox (badness 10000) in paragraph at lines 309--310
 []|\OT1/cmr/m/n/9 GNN
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 310--310
+Underfull \hbox (badness 10000) in paragraph at lines 319--319
 []|\OT1/cmr/m/n/9 GNN
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 310--310
+Underfull \hbox (badness 10000) in paragraph at lines 319--319
 \OT1/cmr/m/n/9 +
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 312--312
+Underfull \hbox (badness 10000) in paragraph at lines 321--321
 []|\OT1/cmr/m/n/9 GNN
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 314--314
+Underfull \hbox (badness 10000) in paragraph at lines 323--323
 []|\OT1/cmr/m/n/9 GNN
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 323--324
+Underfull \hbox (badness 10000) in paragraph at lines 332--333
 
  []
 
 
-Overfull \hbox (0.98831pt too wide) in paragraph at lines 380--380
+Overfull \hbox (0.98831pt too wide) in paragraph at lines 389--389
 []|\OT1/cmr/m/n/9 QSPR[]Mordred2D[]TPOT[]AutoML| 
  []
 
-[9]
-Underfull \hbox (badness 10000) in paragraph at lines 392--393
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 394--395
-
- []
-
 [10]
-Overfull \hbox (0.19388pt too wide) in paragraph at lines 396--397
+Underfull \hbox (badness 10000) in paragraph at lines 401--402
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 403--404
+
+ []
+
+[11]
+Underfull \hbox (badness 10000) in paragraph at lines 405--406
+
+ []
+
+
+Overfull \hbox (0.19388pt too wide) in paragraph at lines 407--408
 []\OT1/cmr/m/n/9 The mul-ti-task model might of-fer a good com-pro-mise be-twee
 n in-sample
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 396--397
+Underfull \hbox (badness 10000) in paragraph at lines 407--408
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 398--399
+Underfull \hbox (badness 10000) in paragraph at lines 409--410
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 400--401
+Underfull \hbox (badness 10000) in paragraph at lines 411--412
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 404--405
+Underfull \hbox (badness 10000) in paragraph at lines 413--414
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 406--407
+Underfull \hbox (badness 10000) in paragraph at lines 417--418
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 408--409
+Underfull \hbox (badness 10000) in paragraph at lines 419--420
+
+ []
+
+[12]
+Underfull \hbox (badness 10000) in paragraph at lines 421--422
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 410--411
+Underfull \hbox (badness 10000) in paragraph at lines 423--424
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 414--415
+Underfull \hbox (badness 10000) in paragraph at lines 427--428
 
  []
 
-[11]
-Overfull \hbox (0.98553pt too wide) in paragraph at lines 416--417
+
+Overfull \hbox (0.98553pt too wide) in paragraph at lines 429--430
 []\OT1/cmr/m/n/9 One so-lu-tion to achiev-ing good per-for-mance on a set of ta
 r-get molecules
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 416--417
-
- []
-
-
-Overfull \hbox (12.50453pt too wide) in paragraph at lines 418--419
-[]\OT1/cmr/m/n/9 Many well-established gen-eral logP pre-dic-tion meth-ods, suc
-h as XLOGP3,
- []
-
-[12]
 Underfull \hbox (badness 10000) in paragraph at lines 429--430
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 437--438
+Overfull \hbox (12.50453pt too wide) in paragraph at lines 431--432
+[]\OT1/cmr/m/n/9 Many well-established gen-eral logP pre-dic-tion meth-ods, suc
+h as XLOGP3,
+ []
+
+[13]
+Underfull \hbox (badness 10000) in paragraph at lines 442--443
+
+ []
+
+[14]
+Underfull \hbox (badness 10000) in paragraph at lines 450--451
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 439--440
+Underfull \hbox (badness 10000) in paragraph at lines 452--453
 
  []
 
-[13] (./report.bbl [14]
+(./report.bbl [15] [16]
 Underfull \hbox (badness 2460) in paragraph at lines 123--126
 \OT1/cmr/m/n/9 ing molec-u-lar structure-property re-la-tion-ships us-ing atten
 tion-
  []
 
-[15]) [16] (./report.aux) ) 
+[17]) [18] (./report.aux)
+
+LaTeX Warning: There were undefined references.
+
+ ) 
 Here is how much of TeX's memory you used:
- 3425 strings out of 483140
- 52989 string characters out of 5965151
- 295845 words of memory out of 5000000
- 18407 multiletter control sequences out of 15000+600000
+ 3432 strings out of 483140
+ 53198 string characters out of 5965151
+ 294845 words of memory out of 5000000
+ 18413 multiletter control sequences out of 15000+600000
  541682 words of font info for 59 fonts, out of 8000000 for 9000
  36 hyphenation exceptions out of 8191
  48i,16n,46p,1042b,393s stack positions out of 5000i,500n,10000p,200000b,80000s
- </home/patrik/.texlive2019/texmf-var/fonts/pk/ljfou
-r/jknappen/ec/tcrm0900.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmbx10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
-ts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmbx9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.p
-fb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share
-/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmti9.pfb>
-Output written on report.pdf (16 pages, 615253 bytes).
+ </home/patrik/.texlive2019/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0900.60
+0pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></
+usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/sh
+are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/a
+msfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb>
+Output written on report.pdf (18 pages, 889262 bytes).
 PDF statistics:
- 122 PDF objects out of 1000 (max. 8388607)
- 78 compressed objects within 1 object stream
+ 130 PDF objects out of 1000 (max. 8388607)
+ 82 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 31 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 36 words of extra memory for PDF output out of 10000 (max. 10000000)
 

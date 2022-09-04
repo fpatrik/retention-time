@@ -81,7 +81,7 @@ class RNN:
         smiles_list = self._test_set_smiles if test else self._training_set_smiles
         logps_list = self._test_set_logps if test else self._training_set_logps
 
-        dataset = tf.data.Dataset.from_tensor_slices(([self.preprocess_smiles(smiles) for smiles in smiles_list], logps_list))
+        dataset = tf.data.Dataset.from_tensor_slices(([self.preprocess_smiles(smiles) for smiles in smiles_list], [item for sublist in logps_list for item in sublist]))
         dataset = dataset.batch(self._batch_size).prefetch(tf.data.AUTOTUNE)
     
         loss, acc = self._model.evaluate(dataset)

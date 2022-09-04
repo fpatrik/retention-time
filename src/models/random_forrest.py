@@ -46,7 +46,7 @@ class RandomForrestModel():
         logp_actual = self._test_set_logps if test else self._training_set_logps
 
         return np.sqrt(np.mean(np.square(
-            list(logp_predictions[i] - logp_actual[i] for i in range(len(logp_predictions)))
+            list(logp_predictions[i] - logp_actual[i][0] for i in range(len(logp_predictions)))
         )))
     
     def get_feature_importances(self, n=None):

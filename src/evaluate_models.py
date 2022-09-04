@@ -1,12 +1,15 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from torch_geometric.nn import PNAConv, GeneralConv
 from torch_geometric.seed import seed_everything
 
+from rdkit import Chem
+from rdkit import DataStructs
 from constants import Columns, Datasets
 from structures.dataset import Dataset
-from structures.feature import create_atom_count_features, create_default_fragment_counts_features
+from structures.feature import Feature, create_atom_count_features, create_default_fragment_counts_features
 from scrapers.vcclab import VcclabScraper
 from models.multiple_linear_regression import MultipleLinearRegressionModel
 from models.random_forrest import RandomForrestModel
@@ -14,6 +17,7 @@ from models.rnn import RNN
 from models.pytorch_gnn.pytorch_gnn import GraphNeuralNetModel
 from models.pytorch_gnn.pytorch_gnn_multi import MultiTaskGraphNeuralNetModel
 
+PLOTS_DIR = 'plots'
 
 def evaluate_mlr_model(dataset_train, dataset_martel, dataset_sampl7):
     rmses_test = []
@@ -256,7 +260,11 @@ def evaluate_model_correlation_and_error_distribution():
     dataset_martel = Dataset()
     dataset_martel.load_data(Datasets.MARTEL_LOGP)
 
+    dataset_opera = Dataset()
+    dataset_opera.load_data(Datasets.OPERA_EX_MARTEL_AND_SAMPL7_LOGP)
+
     martel_list = [v[0] for v in dataset_martel.logp_list]
+    martel_smiles_list = dataset_martel.smiles_list
 
     model_predictions = {}
     model_errors = {}
@@ -305,6 +313,36 @@ def evaluate_model_correlation_and_error_distribution():
     print('Error distributions:')
     print(error_bins)
 
+    for model in models:
+        mean_predictions = np.mean(model_predictions[model], axis=0)
+        model_errors = [mean_predictions[i] - martel_list[i] for i in range(len(mean_predictions))]
+
+        plt.scatter(martel_list, model_errors, c='g', alpha=0.5)
+        coef = np.polyfit(martel_list, model_errors,1)
+        poly1d_fn = np.poly1d(coef)
+        plt.plot([-10, 10], poly1d_fn([-10, 10]), '--k', label=f'y = {poly1d_fn.c[1]:.2f} {poly1d_fn.c[0]:.2f} x')
+        plt.title(f'Prediction Error vs Measured logP for {model.upper() if model != "gnn_multi" else "GNN Multitask"} Model')
+        plt.xlabel('Measured LogP')
+        plt.ylabel('Prediction Error')
+        plt.xlim((0, 8))
+        plt.ylim((-4, 4))
+        plt.legend(fontsize=9)
+        plt.savefig(f'{PLOTS_DIR}/martel_errors_{model}.png', dpi=300)
+        plt.clf()
+    
+    for model in models:
+        mean_predictions = np.mean(model_predictions[model], axis=0)
+        absolute_model_errors = np.abs([mean_predictions[i] - martel_list[i] for i in range(len(mean_predictions))])
+
+        print(model)
+        atom_count_features = create_atom_count_features(atoms=['C', 'O', 'N', 'F', 'Br', 'Cl'])
+        default_fragment_counts_features = create_default_fragment_counts_features()
+        mlr = MultipleLinearRegressionModel()
+        mlr.use_dataset(martel_smiles_list, None, absolute_model_errors, None)
+        mlr.set_features(atom_count_features)
+        mlr.fit_model()
+
+    
 def evaluate_gnn_multi():
     dataset = Dataset()
     dataset.load_data(Datasets.OPERA_EX_MARTEL_AND_SAMPL7_LOGP_MULTITASK)
@@ -348,8 +386,53 @@ def evaluate_gnn_multi():
     print('GNN Multi Martel RMSE: ', np.mean(rmses_martel), ' +- ', np.std(rmses_martel))
     print('GNN Multi Sampl7 RMSE: ', np.mean(rmses_sampl7), ' +- ', np.std(rmses_sampl7))
 
+def evaluate_martel_weighted_training_data_model(sampling='martel'):
+    seed_everything(0)
+    dataset_logp = Dataset()
+    dataset_logp.load_data(Datasets.OPERA_EX_MARTEL_AND_SAMPL7_LOGP)
+
+    dataset_martel = Dataset()
+    dataset_martel.load_data(Datasets.MARTEL_LOGP)
+
+    training_smiles = []
+    training_logps = []
+
+    bins = []
+    for i in range(-2, 8):
+        if sampling == 'uniform':
+            bins.append((i, i + 1, int(10000 / 11)))
+        else:
+            bins.append((
+                i,
+                i + 1,
+                int(len([1 for logp in dataset_martel.logp_list if logp[0] > i and logp[0] <= i + 1]) * 10000 / len(dataset_martel.logp_list))
+            ))
+
+    for b in bins:
+        molecules_added = 0
+        while molecules_added < b[2]:
+            random_opera_molecule = np.random.randint(0, len(dataset_logp.smiles_list), size=1)[0]
+            logp = dataset_logp.logp_list[random_opera_molecule][0]
+
+            if logp > b[0] and logp <= b[1]:
+                training_smiles.append(dataset_logp.smiles_list[random_opera_molecule])
+                training_logps.append(dataset_logp.logp_list[random_opera_molecule])
+                molecules_added += 1
+
+    atom_count_features = create_atom_count_features(atoms=['C', 'O', 'N', 'F', 'Br', 'Cl'])
+    default_fragment_counts_features = create_default_fragment_counts_features()
+        
+    mlrm = MultipleLinearRegressionModel()
+    mlrm.set_features(atom_count_features + default_fragment_counts_features)
+    mlrm.use_dataset(training_smiles, dataset_martel.smiles_list, training_logps, dataset_martel.logp_list)
+    mlrm.fit_model()
+
+    print(mlrm.compute_rmse())
+
 
 if __name__ == '__main__':
-    #evaluate_models()
+    evaluate_models()
     evaluate_gnn_multi()
-    #evaluate_model_correlation_and_error_distribution()
+    evaluate_model_correlation_and_error_distribution()
+    evaluate_martel_weighted_training_data_model(sampling='martel')
+    evaluate_martel_weighted_training_data_model(sampling='uniform')
