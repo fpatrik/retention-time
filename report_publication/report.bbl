@@ -24,6 +24,10 @@ Q.~Yang, H.~Ji, H.~Lu, and Z.~Zhang, ``Prediction of liquid chromatographic
   identification,'' {\em Analytical Chemistry}, vol.~93, no.~4, pp.~2200--2206,
   2021.
 
+\bibitem{moruz2017peptide}
+L.~Moruz and L.~K{\"a}ll, ``Peptide retention time prediction,'' {\em Mass
+  spectrometry reviews}, vol.~36, no.~5, pp.~615--623, 2017.
+
 \bibitem{bouwmeester2019comprehensive}
 R.~Bouwmeester, L.~Martens, and S.~Degroeve, ``Comprehensive and empirical
   evaluation of machine learning algorithms for small molecule lc retention

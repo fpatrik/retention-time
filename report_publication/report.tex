@@ -9,16 +9,23 @@
 \usepackage{graphicx,subcaption,ragged2e, array}
 \usepackage{footnote}
 \usepackage[font=small,labelfont=bf]{caption}
+\usepackage{titlesec}
+
+
+\titleformat*{\paragraph}{\small\bfseries}
+
 \makesavenoteenv{tabular}
 
 
 % AMS packages:
 \usepackage{amsmath, amsthm, amsfonts}
 
+
 \title{Retention time prediction to facilitate molecular structure identification with tandem mass spectrometry}
-\author{Patrik Friedlos\\
-  \small DAS ETH Data Science Capstone Project at Swiss Data Science Center (SDSC)\\
-  \small Supervised by Eliza Harris and Lilian Gasser
+
+\author{Patrik Friedlos\thanks{Student of ETH Zurich at the time of writing}\\
+  \and Lilian Gasser\thanks{Swiss Data Science Center (SDSC)}
+   \and Eliza Harris\footnotemark[2]
 }
 
 \begin{document}
@@ -113,7 +120,7 @@ We trained a RF non-linear regression model that creates an ensemble of decision
 
 While predicting molecular properties with RNNs appears to be less common, they have been used for molecule generation in contexts such as drug discovery \cite{bjerrum2017molecular}. In our RNN implementation, we passed atom representations, as described in the next paragraph, iteratively through the RNN. As there is no natural ordering of atoms in a molecule, we used the default order of RDKit. Finally, we added a fully connected layer predicting logP from the learned representation of the molecule.\\
 
-The RNN does not require explicit feature generation, however we had to find a suitable representation for each atom within the molecule. We represented each atom as the atom type itself and its neighboring atoms and bond types. We found that there were around 500 different combinations of atoms with their neighboring atoms in our datasets, provided we did not consider hydrogen atoms. We then used an embedding layer to reduce the dimensionality of the representation.\\
+The RNN does not require explicit feature generation, however we had to find a suitable representation for each atom within the molecule. We represented each atom as the atom type itself and its neighboring atoms and bond types. We found that there were around 500 different combinations of atoms with their neighboring atoms in our datasets, provided we did not consider hydrogen atoms. We then useed an embedding layer to reduce the dimensionality of the representation.\\
 
 \subsubsection{Graph neural networks}
 
@@ -442,6 +449,22 @@ We set out to evaluate different machine learning algorithms for logP prediction
 We conclude that a thorough understanding of the molecular space of both the training as well as the target molecules is essential for logP prediction. Models can show great in-sample performance but lack generalization, and vice versa. More powerful approaches tend to show better in-sample performance. Simpler models, such as MLR, demonstrate less overfitting and can be more suitable for predicting logP out-of-sample. \\
 
 Modern techniques such as GNNs have been used for logP prediction, often in combination with multitask learning or transfer learning and with a specific set of target molecules. Many of the models geared towards logP prediction in broad molecular spaces, such as XlogP3-AA, have been developed many years ago. We have seen that multitask models might be valuable for creating generalizing GNNs for molecular property prediction. Quite possibly, further improvements could be made with the techniques outlined in the discussion.
+
+\paragraph{Author Information\\}
+
+This work is the result of a student project of Patrik Friedlos at ETH Zurich supervised by Lilian Gasser and Eliza Harris at the Swiss Data Science Center (SDSC).
+
+\paragraph{Data and Code Availability Statement\\}
+
+Datasets and code used for this work are openly accessible and can be found at github.com/fpatrik/retention-time.
+
+\paragraph{Declaration of Competing Interest\\}
+
+The authors declare that they have no known competing financial interests or personal relationship that could have appeared to influence the work reported in this paper.
+
+\paragraph{Acknowlegement\\}
+
+We thank Nathanaël Perraudin and Luis Salamanca for their detailed feedback.
 
 % Bibliography
 %-----------------------------------------------------------------

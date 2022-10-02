@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import statsmodels.api as sm
 
 from torch_geometric.nn import PNAConv, GeneralConv
 from torch_geometric.seed import seed_everything
@@ -269,6 +270,7 @@ def evaluate_model_correlation_and_error_distribution():
     model_predictions = {}
     model_errors = {}
     models = ['mlr', 'rf', 'rnn', 'gnn', 'gnn_pna', 'gnn_attention', 'gnn_multi']
+    model_names = {'mlr': 'MLR', 'rf': 'RF', 'rnn': 'RNN', 'gnn': 'GNN', 'gnn_pna': 'GNN + PNA', 'gnn_attention': 'GNN + Attention', 'gnn_multi': 'GNN + Multitask'}
     for model in models:
         for i in range(5):
             result = pd.read_csv(f'./output/{model}/predictions_{i}.csv')[Columns.LOGP].to_list()
@@ -318,10 +320,17 @@ def evaluate_model_correlation_and_error_distribution():
         model_errors = [mean_predictions[i] - martel_list[i] for i in range(len(mean_predictions))]
 
         plt.scatter(martel_list, model_errors, c='g', alpha=0.5)
-        coef = np.polyfit(martel_list, model_errors,1)
+
+        coef = np.polyfit(martel_list, model_errors, 1)
         poly1d_fn = np.poly1d(coef)
+
+        mod = sm.OLS(model_errors, sm.add_constant(martel_list))
+        fit = mod.fit()
+        print(model)
+        print(fit.summary())
+
         plt.plot([-10, 10], poly1d_fn([-10, 10]), '--k', label=f'y = {poly1d_fn.c[1]:.2f} {poly1d_fn.c[0]:.2f} x')
-        plt.title(f'Prediction Error vs Measured logP for {model.upper() if model != "gnn_multi" else "GNN Multitask"} Model')
+        plt.title(f'Prediction Error vs Measured logP for {model_names[model]} Model')
         plt.xlabel('Measured LogP')
         plt.ylabel('Prediction Error')
         plt.xlim((0, 8))
@@ -336,7 +345,6 @@ def evaluate_model_correlation_and_error_distribution():
 
         print(model)
         atom_count_features = create_atom_count_features(atoms=['C', 'O', 'N', 'F', 'Br', 'Cl'])
-        default_fragment_counts_features = create_default_fragment_counts_features()
         mlr = MultipleLinearRegressionModel()
         mlr.use_dataset(martel_smiles_list, None, absolute_model_errors, None)
         mlr.set_features(atom_count_features)
